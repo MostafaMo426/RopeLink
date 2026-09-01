@@ -295,29 +295,36 @@ npm test
 
 ## 4. Phase 3: Implementation Plan (Upcoming)
 
-### 4.1 Objective & Scope
-Phase 3 transitions RopeLink into a full-cycle **Turnaround Execution Platform**, enabling matched parties to negotiate terms in a **Real-Time Match Chat Room**, execute legally binding **Digital Turnaround Subleasing Agreements (عقود الإسناد والتسكين الرقمية)** denominated in Saudi Riyals (SAR), and monitor on-site **Field Crew Mobilization Milestones** (Site Gate Passes, IRATA ID Badges, and Safety Inductions).
+### 4.1 Objective & Scope (Saudi Labor Law & Ajeer Compliance)
+Phase 3 transitions RopeLink into a full-cycle, legally compliant **Turnaround Execution Platform**. It enables matched parties to negotiate terms in a **Real-Time Match Chat Room**, execute legally binding **Digital Turnaround Subleasing Agreements (عقود الإسناد والتسكين الرقمية)** denominated in Saudi Riyals (SAR), and monitor on-site **Field Crew Mobilization Milestones** in strict alignment with Saudi labor regulations.
+
+> [!IMPORTANT]
+> **Mandatory Saudi Legal Compliance (Ajeer System / نظام أجير):**
+> Under the regulations of the Saudi Ministry of Human Resources and Social Development (MHRSD / Qiwa), subcontracted industrial manpower cannot legally be deployed to another entity or issued an industrial site gate pass without an official **Ajeer Permit (تصريح أجير)** legalizing the temporary transfer/secondment of workers between commercial establishments. 
+> 
+> Therefore, Phase 3 integrates a strict **7-Stage Milestone Execution Pipeline** placing the verified issuance of the Ajeer Permit prior to the Site Gate Pass.
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       PHASE 3 B2B WORKFLOW PIPELINE                         │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│                 PHASE 3 B2B WORKFLOW PIPELINE (SAUDI COMPLIANT: 7-STAGES)                   │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
   1. Match Proposal Accepted
                │
                ▼
-  2. Real-Time Chat & Negotiation Room (Direct In-App Messaging & Day Rates)
+  2. Real-Time Chat & Negotiation Room (Direct In-App Messaging & Day Rates in SAR)
                │
                ▼
   3. Digital Subleasing Agreement (Scope of Work, Rates in SAR, Dual Signatures)
                │
                ▼
-  4. Field Crew Mobilization Tracker (6-Stage Milestone Execution)
-     ├─ Stage 1: Agreement Dual-Signed
-     ├─ Stage 2: IRATA Roster Dispatched
-     ├─ Stage 3: Site Gate Pass Issued (Jubail / Yanbu / NEOM)
-     ├─ Stage 4: Safety & HSE Induction Completed
-     ├─ Stage 5: Active Field Execution
-     └─ Stage 6: Project Turnaround Handover
+  4. Field Crew Mobilization Tracker (7-Stage Sequential Execution)
+     ├─ Stage 1: Agreement Dual-Signed (توقيع الاتفاقية)
+     ├─ Stage 2: IRATA Roster Dispatched (إرسال بيان واعتمادات الفنيين)
+     ├─ Stage 3: Ajeer Permit Issued (إصدار تصريح أجير لنقل الخدمات المؤقت)  ⚡ [LEGAL GATEWAY]
+     ├─ Stage 4: Site Gate Pass Issued (إصدار تصاريح دخول الموقع - الجبيل/ينبع/نيوم)
+     ├─ Stage 5: Safety & HSE Induction Completed (اجتياز توجيه السلامة الميداني)
+     ├─ Stage 6: Active Field Execution (قيد العمل الميداني)
+     └─ Stage 7: Turnaround Handover & Closeout (إتمام المشروع وتسليم الموقع)
 ```
 
 ---
@@ -335,8 +342,8 @@ All new files will strictly comply with the $< 200$ line architectural rule.
 | `AgreementModal.tsx` | `src/components/agreements/AgreementModal.tsx` | ~160 | Contract drafting modal displaying standard Saudi B2B turnaround sublease terms. |
 | `AgreementCard.tsx` | `src/components/agreements/AgreementCard.tsx` | ~140 | Agreement status card with contract value in SAR, dual signature stamps, and action buttons. |
 | `AgreementSignatureModal.tsx` | `src/components/agreements/AgreementSignatureModal.tsx` | ~110 | Digital signature capture modal stamping authorization with timestamp and user ID. |
-| `MobilizationTracker.tsx` | `src/components/mobilization/MobilizationTracker.tsx` | ~150 | 6-stage visual milestone stepper for live deployment monitoring. |
-| `CrewRosterModal.tsx` | `src/components/mobilization/CrewRosterModal.tsx` | ~140 | Manager for entering technician names, IRATA logbook numbers, and Gate Pass document references. |
+| `MobilizationTracker.tsx` | `src/components/mobilization/MobilizationTracker.tsx` | ~165 | 7-stage visual milestone stepper including Ajeer permit verification. |
+| `CrewRosterModal.tsx` | `src/components/mobilization/CrewRosterModal.tsx` | ~150 | Manager for entering technician names, IRATA logbook numbers, Ajeer permit numbers, and Gate Passes. |
 | `AgreementsFeed.tsx` | `src/components/agreements/AgreementsFeed.tsx` | ~130 | Dashboard view aggregating all active and completed B2B agreements for the user. |
 
 ---
@@ -355,9 +362,11 @@ CREATE TYPE agreement_status AS ENUM (
     'cancelled'
 );
 
+-- 7-Stage Saudi Labor Compliant Mobilization Stages
 CREATE TYPE milestone_stage AS ENUM (
     'agreement_signed', 
     'roster_dispatched', 
+    'ajeer_permit_issued',
     'gate_pass_issued', 
     'hse_induction_done', 
     'active_execution', 
@@ -397,13 +406,14 @@ CREATE TABLE public.chat_messages (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 4. Mobilization Crew Rosters & Passports Table
+-- 4. Mobilization Crew Rosters with Ajeer Permit Reference Table
 CREATE TABLE public.crew_rosters (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     agreement_id UUID NOT NULL REFERENCES public.agreements(id) ON DELETE CASCADE,
     technician_name TEXT NOT NULL,
     irata_level TEXT NOT NULL,
     irata_number TEXT NOT NULL,
+    ajeer_permit_reference TEXT,
     gate_pass_reference TEXT,
     medical_fitness_valid BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -452,11 +462,14 @@ USING (
 
 ### 4.4 Phase 3 Testing & Quality Assurance Strategy
 1. **Automated Suite (`scripts/verify-phase3.mjs`):**
-   * **I18N-03:** 100% dictionary key synchronization across `ar.json` and `en.json` for `chat`, `agreements`, and `mobilization` namespaces.
+   * **I18N-03:** 100% dictionary key synchronization across `ar.json` and `en.json` for `chat`, `agreements`, and `mobilization` namespaces, enforcing exact Saudi legal terminology:
+     * Arabic: **`تصريح أجير`** (Ajeer Permit) & **`إصدار تصريح أجير لنقل الخدمات المؤقت`**.
+     * English: **`Ajeer Temporary Work Permit`** & **`Ajeer Permit Issued`**.
    * **ARCH-03:** Zero file limit violations ($< 200$ lines per `.tsx` and `.ts` file).
    * **STATE-01:** Agreement dual-signature state machine verification (`draft` ➔ `pending_recipient_sig` ➔ `active`).
-   * **MILE-01:** Sequential mobilization milestone transitions from `agreement_signed` through `completed`.
+   * **MILE-01:** Sequential 7-stage mobilization milestone transitions from `agreement_signed` through `ajeer_permit_issued`, `gate_pass_issued`, and `completed`.
 2. **Manual & Realtime Verification:**
    * Multi-tab chat testing verifying instant delivery across sessions.
    * Dual-party agreement execution flow validating timestamp stamping in SAR.
-   * Gate pass document referencing and technician IRATA ID validation.
+   * Ajeer permit reference verification and technician IRATA ID validation prior to gate pass generation.
+

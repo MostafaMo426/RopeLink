@@ -48,26 +48,31 @@ export default function VerificationModal({
       let finalDocUrl: string | null = profile.cr_document_url || null;
 
       if (selectedFile && isSupabaseConfigured()) {
-        const fileExt = selectedFile.name.split('.').pop();
-        const fileName = `${profile.id}_${Date.now()}.${fileExt}`;
-        
-        // 1. Upload to Supabase Storage 'verification-docs' bucket
-        const { data: uploadData, error: uploadErr } = await supabase.storage
-          .from('verification-docs')
-          .upload(fileName, selectedFile, { upsert: true });
+        const cleanName = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const fileExt = cleanName.split('.').pop() || 'pdf';
+        const filePath = `${profile.id}/${Date.now()}_${cleanName}`;
 
-        if (!uploadErr && uploadData) {
-          const { data: urlData } = supabase.storage
-            .from('verification-docs')
-            .getPublicUrl(fileName);
-          finalDocUrl = urlData.publicUrl;
-        } else {
-          // Fallback to Data URL if bucket upload is not available
+        // Upload directly to Supabase Storage 'verification-docs' bucket
+        const { error: uploadErr } = await supabase.storage
+          .from('verification-docs')
+          .upload(filePath, selectedFile, {
+            cacheControl: '3600',
+            upsert: true,
+          });
+
+        if (uploadErr) {
+          console.warn('Storage upload notice:', uploadErr.message);
+          // Fallback to data URL only if bucket upload blocked
           finalDocUrl = await new Promise<string>((resolve) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
             reader.readAsDataURL(selectedFile);
           });
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('verification-docs')
+            .getPublicUrl(filePath);
+          finalDocUrl = urlData.publicUrl;
         }
       }
 

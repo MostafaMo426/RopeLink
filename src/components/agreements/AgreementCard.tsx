@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { Agreement, MilestoneStage } from '@/types/database';
-import { FileText, MapPin, Users, Calendar, PenTool, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { FileText, Users, PenTool, CheckCircle2 } from 'lucide-react';
 import { getCityLabel, getSpecialtyLabel } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
 import MobilizationTracker from '@/components/mobilization/MobilizationTracker';
@@ -23,13 +23,14 @@ export default function AgreementCard({
   onAdvanceMilestone,
 }: AgreementCardProps) {
   const t = useTranslations('agreements');
+  const tDash = useTranslations('dashboard');
   const locale = useLocale();
 
   const isProposer = a.proposer_id === currentUserId;
   const isMySignatureDone = isProposer ? a.terms_accepted_proposer : a.terms_accepted_recipient;
   const otherCompany = isProposer
-    ? a.recipient?.company_name || 'الشريك التجاري'
-    : a.proposer?.company_name || 'الشريك التجاري';
+    ? a.recipient?.company_name || tDash('defaultCompany')
+    : a.proposer?.company_name || tDash('defaultCompany');
 
   return (
     <div className="glass-panel p-5 sm:p-6 rounded-2xl border-slate-800 hover:border-slate-700 transition-all space-y-4">
@@ -41,7 +42,7 @@ export default function AgreementCard({
           </div>
           <div>
             <h3 className="font-bold text-white text-base flex items-center gap-2">
-              <span>عقد إسناد:</span>
+              <span>{t('agreementTitlePrefix')}:</span>
               <span className="text-amber-400">{otherCompany}</span>
             </h3>
             <p className="text-xs text-slate-400 font-semibold">{getSpecialtyLabel(a.specialty, locale)}</p>
@@ -70,25 +71,25 @@ export default function AgreementCard({
       {/* Contract Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
         <div>
-          <span className="text-slate-500 block">القيمة الإجمالية:</span>
+          <span className="text-slate-500 block">{t('totalContractValue')}</span>
           <span className="font-bold text-amber-400 text-sm">
             {Number(a.total_estimated_sar).toLocaleString()} {t('sarCurrency')}
           </span>
         </div>
         <div>
-          <span className="text-slate-500 block">اليومية للفني:</span>
+          <span className="text-slate-500 block">{t('dailyRatePerTech')}</span>
           <span className="font-semibold text-white">
             {Number(a.daily_rate_sar).toLocaleString()} {t('sarCurrency')}
           </span>
         </div>
         <div>
-          <span className="text-slate-500 block">العدد والموقع:</span>
+          <span className="text-slate-500 block">{t('countAndLocation')}</span>
           <span className="font-semibold text-white">
-            {a.technician_count} فنيين • {getCityLabel(a.city, locale)}
+            {a.technician_count} {tDash('techsCount')} • {getCityLabel(a.city, locale)}
           </span>
         </div>
         <div>
-          <span className="text-slate-500 block">الفترة الميدانية:</span>
+          <span className="text-slate-500 block">{t('fieldPeriod')}</span>
           <span className="font-semibold text-white">
             {formatDate(a.start_date, locale)}
           </span>
@@ -99,23 +100,23 @@ export default function AgreementCard({
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         <div className="flex items-center gap-3 text-xs">
           <div className="flex items-center gap-1.5 text-slate-300">
-            <span className="text-slate-500">توقيع المقاول:</span>
+            <span className="text-slate-500">{t('proposerSignature')}</span>
             {a.terms_accepted_proposer ? (
               <span className="text-emerald-400 flex items-center gap-1 font-bold">
-                <CheckCircle2 className="w-3.5 h-3.5" /> معتمد
+                <CheckCircle2 className="w-3.5 h-3.5" /> {t('verifiedSigned')}
               </span>
             ) : (
-              <span className="text-amber-400">بانتظار الاعتماد</span>
+              <span className="text-amber-400">{t('pendingSignature')}</span>
             )}
           </div>
           <div className="flex items-center gap-1.5 text-slate-300">
-            <span className="text-slate-500">توقيع المزود:</span>
+            <span className="text-slate-500">{t('recipientSignature')}</span>
             {a.terms_accepted_recipient ? (
               <span className="text-emerald-400 flex items-center gap-1 font-bold">
-                <CheckCircle2 className="w-3.5 h-3.5" /> معتمد
+                <CheckCircle2 className="w-3.5 h-3.5" /> {t('verifiedSigned')}
               </span>
             ) : (
-              <span className="text-amber-400">بانتظار الاعتماد</span>
+              <span className="text-amber-400">{t('pendingSignature')}</span>
             )}
           </div>
         </div>

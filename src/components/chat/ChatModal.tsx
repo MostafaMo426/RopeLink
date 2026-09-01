@@ -37,8 +37,8 @@ export default function ChatModal({
 
   const isProposer = match.proposer_id === currentUserId;
   const partnerName = isProposer
-    ? match.recipient?.company_name || 'الشريك التجاري'
-    : match.proposer?.company_name || 'الشريك التجاري';
+    ? match.recipient?.company_name || t('partner')
+    : match.proposer?.company_name || t('partner');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">

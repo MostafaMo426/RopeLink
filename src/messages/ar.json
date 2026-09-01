@@ -193,11 +193,16 @@
     "sendBtn": "إرسال",
     "loading": "جاري تحميل المحادثة...",
     "empty": "لا توجد رسائل سابقة. ابدأ التفاوض بخصوص العرض الآن!",
-    "unreadBadge": "جديد"
+    "unreadBadge": "جديد",
+    "you": "أنت",
+    "partner": "الشريك التجاري"
   },
   "agreements": {
     "title": "عقود الإسناد والتسكين الرقمية",
     "subtitle": "اتفاقيات إسناد كوادر فنية متوافقة مع معايير السلامة المهنية وأرامكو وسابك",
+    "agreementTitlePrefix": "عقد إسناد",
+    "refreshAgreementsBtn": "تحديث العقود",
+    "loadingAgreements": "جاري تحميل عقود الإسناد الميداني...",
     "draftTitle": "صياغة عقد إسناد جديد",
     "draftSubtitle": "إدخال شروط العقد، اليوميات بالريال السعودي، ونطاق العمل الميداني",
     "dailyRateLabel": "سعر اليومية للفني (ريال سعودي / SAR)",
@@ -224,7 +229,20 @@
     "emptyAgreementsSubtitle": "عند قبول عروض المطابقة وتوقيع الاتفاقيات ستظهر هنا فورياً.",
     "toastCreated": "تم إنشاء مسودة عقد الإسناد بنجاح",
     "toastSigned": "تم توقيع العقد إلكترونياً بنجاح",
-    "toastMilestoneUpdated": "تم تحديث مرحلة الجاهزية الميدانية"
+    "toastMilestoneUpdated": "تم تحديث مرحلة الجاهزية الميدانية",
+    "totalContractValue": "القيمة الإجمالية:",
+    "dailyRatePerTech": "اليومية للفني:",
+    "countAndLocation": "العدد والموقع:",
+    "fieldPeriod": "الفترة الميدانية:",
+    "specialtyLabel": "التخصص:",
+    "cityLabel": "المدينة:",
+    "proposerSignature": "توقيع المقاول:",
+    "recipientSignature": "توقيع المزود:",
+    "verifiedSigned": "معتمد",
+    "pendingSignature": "بانتظار الاعتماد",
+    "draftingBtn": "جاري الصياغة...",
+    "signingBtn": "جاري التوقيع الرقمي...",
+    "stampReady": "جاهز للاعتماد الرقمي الفوري"
   },
   "mobilization": {
     "title": "متابعة الجاهزية والتسكين الميداني (7 مراحل نظامية)",
@@ -243,6 +261,7 @@
     "stage7": "تسليم المشروع",
     "stage7Desc": "إتمام المهام وتسليم الموقع وإغلاق العقد",
     "advanceStageBtn": "الانتقال للمرحلة التالية",
+    "mandatoryLegalBadge": "نظامي إلزامي 🇸🇦",
     "rosterModalTitle": "بيان الكادر الفني وتصاريح أجير",
     "techNameLabel": "اسم الفني الرباعي",
     "irataLevelLabel": "مستوى IRATA",
@@ -251,7 +270,10 @@
     "gatePassRefLabel": "رقم تصريح الموقع (Gate Pass No.)",
     "addTechBtn": "إضافة فني للبيان",
     "techsRosterList": "قائمة الفنيين المسجلين بالمشروع",
-    "emptyRoster": "لم يتم إضافة فنيين إلى البيان بعد."
+    "emptyRoster": "لم يتم إضافة فنيين إلى البيان بعد.",
+    "techAddedSuccess": "تمت إضافة الفني إلى بيان المشروع",
+    "ajeerPrefix": "أجير",
+    "passPrefix": "تصريح"
   },
   "requestModal": {
     "titleProject": "تسجيل متطلبات مشروع جديد",

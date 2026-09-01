@@ -73,7 +73,7 @@ export default function AgreementSignatureModal({
           </div>
           <div className="text-[10px] text-emerald-400 flex items-center justify-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>جاهز للاعتماد الرقمي الفوري</span>
+            <span>{t('stampReady')}</span>
           </div>
         </div>
 
@@ -82,7 +82,7 @@ export default function AgreementSignatureModal({
           onClick={handleConfirm}
           className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-amber-glow transition-all cursor-pointer disabled:opacity-50"
         >
-          {signing ? 'جاري التوقيع الرقمي...' : t('confirmSignatureBtn')}
+          {signing ? t('signingBtn') : t('confirmSignatureBtn')}
         </button>
       </motion.div>
     </div>

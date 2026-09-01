@@ -193,11 +193,16 @@
     "sendBtn": "Send",
     "loading": "Loading chat conversation...",
     "empty": "No messages yet. Start negotiating your turnaround terms!",
-    "unreadBadge": "New"
+    "unreadBadge": "New",
+    "you": "You",
+    "partner": "Commercial Partner"
   },
   "agreements": {
     "title": "Digital Turnaround Subleasing Agreements",
     "subtitle": "Legally compliant B2B technician subleasing agreements adhering to Aramco & SABIC safety standards",
+    "agreementTitlePrefix": "Sublease Agreement",
+    "refreshAgreementsBtn": "Refresh Agreements",
+    "loadingAgreements": "Loading field sublease agreements...",
     "draftTitle": "Draft Turnaround Sublease Agreement",
     "draftSubtitle": "Set contract terms, daily technician rates in SAR, and scope of work",
     "dailyRateLabel": "Daily Rate per Technician (SAR)",
@@ -224,7 +229,20 @@
     "emptyAgreementsSubtitle": "Accepted match proposals ready for contract execution will appear here.",
     "toastCreated": "Turnaround agreement draft created successfully",
     "toastSigned": "Agreement digitally signed successfully",
-    "toastMilestoneUpdated": "Mobilization milestone updated"
+    "toastMilestoneUpdated": "Mobilization milestone updated",
+    "totalContractValue": "Total Contract Value:",
+    "dailyRatePerTech": "Daily Rate per Tech:",
+    "countAndLocation": "Count & Location:",
+    "fieldPeriod": "Field Period:",
+    "specialtyLabel": "Specialty:",
+    "cityLabel": "City:",
+    "proposerSignature": "Contractor Signature:",
+    "recipientSignature": "Supplier Signature:",
+    "verifiedSigned": "Approved",
+    "pendingSignature": "Pending Signature",
+    "draftingBtn": "Drafting...",
+    "signingBtn": "Signing...",
+    "stampReady": "Ready for digital timestamp authorization"
   },
   "mobilization": {
     "title": "Field Mobilization & Readiness Tracker (7 Compliant Stages)",
@@ -243,6 +261,7 @@
     "stage7": "Turnaround Closeout",
     "stage7Desc": "Scope executed, site handed over, and contract closed",
     "advanceStageBtn": "Advance to Next Stage",
+    "mandatoryLegalBadge": "Mandatory Legal 🇸🇦",
     "rosterModalTitle": "Crew Roster & Ajeer Permit Manager",
     "techNameLabel": "Full Technician Name",
     "irataLevelLabel": "IRATA Certification Level",
@@ -251,7 +270,10 @@
     "gatePassRefLabel": "Site Gate Pass Reference Number",
     "addTechBtn": "Add Technician to Roster",
     "techsRosterList": "Registered Field Technicians",
-    "emptyRoster": "No technicians added to this agreement roster yet."
+    "emptyRoster": "No technicians added to this agreement roster yet.",
+    "techAddedSuccess": "Technician added to project roster",
+    "ajeerPrefix": "Ajeer",
+    "passPrefix": "Pass"
   },
   "requestModal": {
     "titleProject": "Post New Project Requirements",

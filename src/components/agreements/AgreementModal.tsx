@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { X, FileText, CheckCircle2, DollarSign, Calendar } from 'lucide-react';
+import { X, FileText } from 'lucide-react';
 import { MatchProposal } from '@/types/database';
 import { getSpecialtyLabel, getCityLabel } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -24,6 +24,7 @@ export default function AgreementModal({
   onCreate,
 }: AgreementModalProps) {
   const t = useTranslations('agreements');
+  const tDash = useTranslations('dashboard');
   const locale = useLocale();
 
   const [dailyRate, setDailyRate] = useState(850);
@@ -94,11 +95,11 @@ export default function AgreementModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
             <div>
-              <span className="text-slate-500 block">التخصص:</span>
+              <span className="text-slate-500 block">{t('specialtyLabel')}</span>
               <span className="font-bold text-amber-400">{getSpecialtyLabel(match.request.specialty, locale)}</span>
             </div>
             <div>
-              <span className="text-slate-500 block">المدينة:</span>
+              <span className="text-slate-500 block">{t('cityLabel')}</span>
               <span className="font-bold text-white">{getCityLabel(match.request.city, locale)}</span>
             </div>
           </div>
@@ -138,7 +139,7 @@ export default function AgreementModal({
               </span>
             </div>
             <span className="text-[11px] text-slate-400">
-              ({techCount} فنيين × {daysCount} أيام)
+              ({techCount} {tDash('techsCount')} × {daysCount} {t('daysCountLabel')})
             </span>
           </div>
 
@@ -166,7 +167,7 @@ export default function AgreementModal({
             disabled={loading || !acceptedTerms}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-amber-glow transition-all cursor-pointer disabled:opacity-50"
           >
-            {loading ? 'جاري الصياغة...' : t('createAgreementBtn')}
+            {loading ? t('draftingBtn') : t('createAgreementBtn')}
           </button>
         </form>
       </motion.div>

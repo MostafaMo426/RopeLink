@@ -54,13 +54,13 @@ export default function AgreementsFeed({
           className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800 hover:border-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-amber-400' : ''}`} />
-          <span>تحديث العقود</span>
+          <span>{t('refreshAgreementsBtn')}</span>
         </button>
       </div>
 
       {loading ? (
         <div className="glass-panel p-10 text-center text-slate-400 rounded-2xl border-slate-800">
-          <p className="text-sm">جاري تحميل عقود الإسناد الميداني...</p>
+          <p className="text-sm">{t('loadingAgreements')}</p>
         </div>
       ) : agreements.length === 0 ? (
         <div className="glass-panel p-10 text-center text-slate-400 rounded-2xl border-slate-800 space-y-1">

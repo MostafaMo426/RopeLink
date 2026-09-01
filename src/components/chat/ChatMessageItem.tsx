@@ -1,8 +1,7 @@
 'use client';
 
 import { ChatMessage } from '@/types/database';
-import { formatDate } from '@/lib/utils';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface ChatMessageItemProps {
   message: ChatMessage;
@@ -11,7 +10,8 @@ interface ChatMessageItemProps {
 
 export default function ChatMessageItem({ message: msg, isMe }: ChatMessageItemProps) {
   const locale = useLocale();
-  const senderName = isMe ? 'أنت' : msg.sender?.company_name || 'الطرف الآخر';
+  const t = useTranslations('chat');
+  const senderName = isMe ? t('you') : msg.sender?.company_name || t('partner');
 
   return (
     <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1`}>

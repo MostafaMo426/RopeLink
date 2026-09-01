@@ -65,11 +65,11 @@ export default function CrewRosterModal({ isOpen, onClose, agreementId }: CrewRo
 
       if (!error && data) {
         setRoster((prev) => [...prev, data as CrewRosterMember]);
-        toast.success('تمت إضافة الفني إلى بيان المشروع');
+        toast.success(t('techAddedSuccess'));
       }
     } else {
       setRoster((prev) => [...prev, { ...newMember, id: `r_${Date.now()}`, created_at: new Date().toISOString() }]);
-      toast.success('تمت إضافة الفني');
+      toast.success(t('techAddedSuccess'));
     }
 
     setName('');

@@ -33,12 +33,12 @@ export default function CrewRosterList({ roster }: CrewRosterListProps) {
               <div className="text-end text-[10px] space-y-0.5">
                 {r.ajeer_permit_reference && (
                   <span className="block text-emerald-400 font-mono">
-                    أجير: {r.ajeer_permit_reference}
+                    {t('ajeerPrefix')}: {r.ajeer_permit_reference}
                   </span>
                 )}
                 {r.gate_pass_reference && (
                   <span className="block text-cyan-400 font-mono">
-                    تصريح: {r.gate_pass_reference}
+                    {t('passPrefix')}: {r.gate_pass_reference}
                   </span>
                 )}
               </div>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { MilestoneStage } from '@/types/database';
-import { CheckCircle2, Circle, ArrowRight, ShieldAlert, Sparkles } from 'lucide-react';
+import { CheckCircle2, Circle, ArrowRight, Sparkles } from 'lucide-react';
 
 interface MobilizationTrackerProps {
   currentMilestone: MilestoneStage;
@@ -95,7 +95,7 @@ export default function MobilizationTracker({
                 </p>
                 {isAjeer && (
                   <span className="text-[9px] font-black text-amber-400 block mt-0.5 uppercase">
-                    نظامي إلزامي 🇸🇦
+                    {t('mandatoryLegalBadge')}
                   </span>
                 )}
               </div>

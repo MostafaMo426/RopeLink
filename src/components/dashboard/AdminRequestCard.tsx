@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ManpowerRequest, RequestStatus } from '@/types/database';
 import { MapPin, Users, Calendar, Phone } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-import { getCityLabel, getStatusLabel } from '@/lib/constants';
+import { getCityLabel, getStatusLabel, getSpecialtyLabel } from '@/lib/constants';
 
 interface AdminRequestCardProps {
   request: ManpowerRequest;
@@ -28,7 +28,7 @@ export default function AdminRequestCard({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-            {req.specialty}
+            {getSpecialtyLabel(req.specialty, locale)}
           </span>
           <div className="flex items-center gap-1.5 text-xs">
             <span className="text-slate-400">{t('statusUpdate')}:</span>

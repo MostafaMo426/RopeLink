@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { X, Send, Handshake } from 'lucide-react';
 import { ManpowerRequest } from '@/types/database';
+import { getCityLabel, getSpecialtyLabel } from '@/lib/constants';
 import { toast } from 'sonner';
 
 interface MatchProposalModalProps {
@@ -21,6 +22,8 @@ export default function MatchProposalModal({
   onSendProposal,
 }: MatchProposalModalProps) {
   const t = useTranslations('marketplace');
+  const tDash = useTranslations('dashboard');
+  const locale = useLocale();
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -79,9 +82,11 @@ export default function MatchProposalModal({
         </div>
 
         <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1 text-xs text-slate-300">
-          <p className="font-semibold text-white">{targetRequest.specialty}</p>
+          <p className="font-semibold text-white">
+            {getSpecialtyLabel(targetRequest.specialty, locale)}
+          </p>
           <p className="text-slate-400">
-            {targetRequest.technician_count} Techs • {targetRequest.city}
+            {targetRequest.technician_count} {tDash('techsCount')} • {getCityLabel(targetRequest.city, locale)}
           </p>
         </div>
 

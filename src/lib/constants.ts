@@ -42,6 +42,17 @@ export function getStatusLabel(status: RequestStatus, locale: string): string {
   return STATUS_META[status]?.[locale === 'ar' ? 'ar' : 'en'] || status;
 }
 
+export function getSpecialtyLabel(specialty: string, locale: string): string {
+  if (!specialty) return '';
+  const found = SPECIALTIES.find(
+    (s) =>
+      s.id === specialty ||
+      s.en.toLowerCase() === specialty.toLowerCase() ||
+      s.ar.toLowerCase() === specialty.toLowerCase()
+  );
+  return found ? (locale === 'ar' ? found.ar : found.en) : specialty;
+}
+
 export const REQUEST_TYPE_META: Record<
   RequestType,
   { labelAr: string; labelEn: string; color: string; badge: string }

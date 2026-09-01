@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ManpowerRequest } from '@/types/database';
 import { MapPin, Users, Calendar } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-import { getCityLabel, getStatusLabel } from '@/lib/constants';
+import { getCityLabel, getStatusLabel, getSpecialtyLabel } from '@/lib/constants';
 
 interface RequestsListProps {
   requests: ManpowerRequest[];
@@ -43,7 +43,7 @@ export default function RequestsList({ requests, loading }: RequestsListProps) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    {req.specialty}
+                    {getSpecialtyLabel(req.specialty, locale)}
                   </span>
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
                     {getStatusLabel(req.status, locale)}

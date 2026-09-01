@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ManpowerRequest, Profile } from '@/types/database';
 import { MapPin, Users, Calendar, Sparkles, Send } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-import { getCityLabel } from '@/lib/constants';
+import { getCityLabel, getSpecialtyLabel } from '@/lib/constants';
 import TrustBadge from '@/components/verification/TrustBadge';
 import { calculateMatchScore, getMatchBadgeStyles } from '@/lib/matching/engine';
 
@@ -71,7 +71,7 @@ export default function MarketplaceCard({
         {/* Title & Specialty */}
         <div>
           <h3 className="font-bold text-white text-base mb-1">{req.company_name}</h3>
-          <p className="text-xs text-amber-400 font-semibold">{req.specialty}</p>
+          <p className="text-xs text-amber-400 font-semibold">{getSpecialtyLabel(req.specialty, locale)}</p>
         </div>
 
         {req.notes && (

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { X, ShieldCheck, FileText, UploadCloud } from 'lucide-react';
+import { X, ShieldCheck, FileText, UploadCloud, CheckCircle } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 import { Profile } from '@/types/database';
 import { toast } from 'sonner';
@@ -24,9 +24,26 @@ export default function VerificationModal({
   const t = useTranslations('verification');
   const [crNumber, setCrNumber] = useState(profile?.cr_number || '');
   const [docName, setDocName] = useState('');
+  const [docDataUrl, setDocDataUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size exceeds 5MB limit');
+        return;
+      }
+      setDocName(file.name);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setDocDataUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +56,7 @@ export default function VerificationModal({
           .from('profiles')
           .update({
             cr_number: crNumber.trim(),
-            cr_document_url: docName ? `https://docs.ropelink.sa/${docName}` : null,
+            cr_document_url: docDataUrl || (docName ? `document_${docName}` : null),
             verification_status: 'pending_review',
           })
           .eq('id', profile.id);
@@ -107,24 +124,24 @@ export default function VerificationModal({
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              {t('uploadLabel')} (PDF / JPEG)
+              {t('uploadLabel')} (PDF / JPEG / PNG)
             </label>
             <div className="p-4 rounded-xl border border-dashed border-slate-700 bg-slate-900/50 hover:border-amber-500/50 transition-colors text-center cursor-pointer">
-              <UploadCloud className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-              <p className="text-xs font-semibold text-white">
-                {docName || t('uploadPrompt')}
-              </p>
+              {docName ? (
+                <div className="flex items-center justify-center gap-2 text-emerald-400 mb-1">
+                  <CheckCircle className="w-6 h-6" />
+                  <span className="text-xs font-bold text-white truncate max-w-xs">{docName}</span>
+                </div>
+              ) : (
+                <UploadCloud className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+              )}
               <p className="text-[11px] text-slate-500 mt-0.5">
                 {t('uploadFormatHelp')}
               </p>
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => {
-                  if (e.target.files?.[0]) {
-                    setDocName(e.target.files[0].name);
-                  }
-                }}
+                onChange={handleFileChange}
                 className="hidden"
                 id="doc-upload"
               />

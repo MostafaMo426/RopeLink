@@ -76,6 +76,7 @@ export interface MatchProposal {
   // Relational joins
   request?: ManpowerRequest | null;
   proposer?: Profile | null;
+  recipient?: Profile | null;
 }
 
 export interface CreateRequestInput {

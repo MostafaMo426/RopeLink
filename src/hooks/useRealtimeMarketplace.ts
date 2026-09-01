@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
-import { ManpowerRequest, MatchProposal } from '@/types/database';
+import { ManpowerRequest, MatchProposal, MatchStatus } from '@/types/database';
 
 export function useRealtimeMarketplace(userId?: string) {
   const [requests, setRequests] = useState<ManpowerRequest[]>([]);
@@ -25,12 +25,14 @@ export function useRealtimeMarketplace(userId?: string) {
         }
 
         if (userId) {
-          const { data: matchData } = await supabase
+          const { data: matchData, error: matchErr } = await supabase
             .from('matches')
-            .select('*, request:requests(*)')
+            .select('*, request:requests(*), proposer:profiles!matches_proposer_id_fkey(*), recipient:profiles!matches_recipient_id_fkey(*)')
             .or(`proposer_id.eq.${userId},recipient_id.eq.${userId}`)
             .order('created_at', { ascending: false });
-          setMatches(matchData || []);
+          if (!matchErr && matchData) {
+            setMatches(matchData);
+          }
         }
       }
     } catch (e) {
@@ -57,9 +59,29 @@ export function useRealtimeMarketplace(userId?: string) {
         },
       ]);
       if (error) throw error;
+      await fetchMarketplace();
       return true;
     } catch (e) {
       console.error('Error sending match proposal', e);
+      return false;
+    }
+  };
+
+  const updateMatchStatus = async (
+    matchId: string,
+    status: MatchStatus
+  ): Promise<boolean> => {
+    if (!isSupabaseConfigured()) return false;
+    try {
+      const { error } = await supabase
+        .from('matches')
+        .update({ status })
+        .eq('id', matchId);
+      if (error) throw error;
+      await fetchMarketplace();
+      return true;
+    } catch (e) {
+      console.error('Error updating match status', e);
       return false;
     }
   };
@@ -99,5 +121,6 @@ export function useRealtimeMarketplace(userId?: string) {
     loading,
     refreshMarketplace: fetchMarketplace,
     sendMatchProposal,
+    updateMatchStatus,
   };
 }

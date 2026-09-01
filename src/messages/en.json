@@ -1,0 +1,112 @@
+{
+  "brand": {
+    "name": "RopeLink",
+    "enName": "RopeLink",
+    "tagline": "Saudi Arabia's Premier B2B Industrial Manpower & Rope Access Marketplace"
+  },
+  "nav": {
+    "home": "Home",
+    "valueProps": "Key Benefits",
+    "stats": "Market Metrics",
+    "howItWorks": "How It Works",
+    "dashboard": "Dashboard",
+    "login": "Sign In",
+    "signup": "Register Company",
+    "logout": "Sign Out"
+  },
+  "hero": {
+    "badge": "🇸🇦 Ready for Saudi Megaprojects & Vision 2030",
+    "title": "B2B Marketplace for Industrial & Rope Access Manpower in KSA",
+    "subtitle": "The smart solution for contractors to monetize idle crew capacity and rapidly mobilize certified IRATA/SPRAT technicians and specialized industrial trades.",
+    "ctaProject": "I Have a Project",
+    "ctaManpower": "I Need Manpower",
+    "ctaCrew": "I Have Available Crew",
+    "activeTechs": "Certified Technicians Ready to Mobilize",
+    "mobilizationTime": "Average Mobilization: 48 Hours",
+    "saudiCitiesCovered": "Immediate Coverage Across Industrial Hubs"
+  },
+  "valueProps": {
+    "sectionTitle": "Why Top Contractors Choose RopeLink",
+    "sectionSubtitle": "A high-performance digital ecosystem built to eliminate downtime, optimize capacity, and ensure vetted safety standards.",
+    "card1Title": "Eliminate Idle Capacity",
+    "card1Desc": "Prevent technician downtime between project phases. Sublease verified crews to vetted contractors and keep your revenue flowing.",
+    "card2Title": "Rapid 48-Hour Mobilization",
+    "card2Desc": "Bypass traditional recruitment delays. Deploy certified teams in Jubail, Yanbu, NEOM, and Riyadh within 48 hours.",
+    "card3Title": "Vetted & Certified Technicians",
+    "card3Desc": "Pre-screened professionals with valid IRATA L1/L2/L3, NDT Level II certifications, and Aramco/SABIC safety compliance."
+  },
+  "marketStats": {
+    "title": "Industrial Platform Performance",
+    "stat1Value": "+1,450",
+    "stat1Label": "Certified Rope Access Technicians",
+    "stat2Value": "99.4%",
+    "stat2Label": "HSE Safety Compliance Rate",
+    "stat3Value": "48 Hours",
+    "stat3Label": "Max Rapid Mobilization SLA",
+    "stat4Value": "+180",
+    "stat4Label": "Registered Enterprises & Contractors"
+  },
+  "howItWorks": {
+    "title": "How RopeLink Works for Contractors",
+    "subtitle": "Streamlined, frictionless workflow connecting industrial projects with verified manpower across Saudi Arabia.",
+    "step1Title": "1. Submit Project or Crew Details",
+    "step1Desc": "Specify project scope, required technical certifications, city, and dates in under 60 seconds.",
+    "step2Title": "2. Instant Intelligent Matching",
+    "step2Desc": "Our platform algorithmically pairs requirements with certified available crews based on proximity and skills.",
+    "step3Title": "3. Mobilize & Execute On-Site",
+    "step3Desc": "Finalize standardized B2B agreements and deploy crews directly to the industrial site ready to work."
+  },
+  "requestModal": {
+    "titleProject": "Register New Project Requirements",
+    "titleManpower": "Request Certified Technicians & Manpower",
+    "titleCrew": "List Available Crew for Subcontracting",
+    "companyNameLabel": "Company / Contractor Name",
+    "companyNamePlaceholder": "e.g., Advanced Industrial Services Co.",
+    "phoneLabel": "Direct Contact Number",
+    "phonePlaceholder": "05xxxxxxxx",
+    "cityLabel": "City / Industrial Zone",
+    "citySelect": "Select city...",
+    "startDateLabel": "On-Site Target Start Date",
+    "countLabel": "Number of Technicians",
+    "specialtyLabel": "Trade & Certification Level",
+    "notesLabel": "Additional Scope of Work / Notes",
+    "notesPlaceholder": "Enter any specific safety requirements, work permits, or site details...",
+    "submitBtn": "Submit Request Now",
+    "submitting": "Submitting...",
+    "successToast": "Request successfully received. Our operations team will contact you shortly.",
+    "errorToast": "Failed to submit request. Please try again."
+  },
+  "auth": {
+    "loginTitle": "Sign in to Enterprise Account",
+    "signupTitle": "Register New Contractor Account",
+    "emailLabel": "Work Email",
+    "passwordLabel": "Password",
+    "companyLabel": "Company / Organization Name",
+    "roleLabel": "Company Type",
+    "roleContractor": "Main Contractor / Project Owner",
+    "roleSupplier": "Manpower Provider / Subcontractor",
+    "loginBtn": "Sign In",
+    "signupBtn": "Create Account",
+    "switchToSignup": "Don't have an account? Register now",
+    "switchToLogin": "Already registered? Sign in here",
+    "authSuccess": "Successfully signed in!",
+    "authError": "Failed to sign in. Please verify your credentials."
+  },
+  "tour": {
+    "welcomeTitle": "Welcome to RopeLink! 🏗️",
+    "welcomeDesc": "Let's take a quick tour to explore how to source, mobilize, and manage industrial manpower seamlessly.",
+    "navTitle": "Navigation & Enterprise Settings",
+    "navDesc": "Switch languages, manage your corporate profile, and navigate between workspace views.",
+    "ctaTitle": "Direct Action & Mobilization CTAs",
+    "ctaDesc": "Use these quick actions to post new project demands, request immediate technicians, or list idle crews.",
+    "statsTitle": "Live Operations & Capacity Monitor",
+    "statsDesc": "Keep track of active mobilization timelines and industrial network capacity.",
+    "nextBtn": "Next",
+    "prevBtn": "Previous",
+    "doneBtn": "Get Started"
+  },
+  "footer": {
+    "rights": "All rights reserved. RopeLink Industrial Marketplace © 2026",
+    "madeInKSA": "Designed and engineered for Saudi Arabia's contracting and industrial sector 🇸🇦"
+  }
+}

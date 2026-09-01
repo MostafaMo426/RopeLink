@@ -19,9 +19,20 @@ export function useRequests(userId?: string) {
         if (error) throw error;
         setRequests(data || []);
       } else {
-        const stored = JSON.parse(localStorage.getItem('ropelink_requests') || '[]');
-        if (stored.length === 0) {
-          // Demo fallback seed records for rich interactive display
+        let stored: ManpowerRequest[] = [];
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem('ropelink_requests');
+          if (raw && raw.trim()) {
+            try {
+              stored = JSON.parse(raw);
+            } catch {
+              localStorage.removeItem('ropelink_requests');
+              stored = [];
+            }
+          }
+        }
+
+        if (!stored || stored.length === 0) {
           const demo: ManpowerRequest[] = [
             {
               id: 'demo-req-1',

@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { Toaster } from 'sonner';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import '@/app/globals.css';
 
 const ibmPlexArabic = IBM_Plex_Sans_Arabic({
@@ -75,6 +76,7 @@ export default async function LocaleLayout({
             theme="dark"
           />
           <Analytics />
+          <SpeedInsights />
         </NextIntlClientProvider>
       </body>
     </html>

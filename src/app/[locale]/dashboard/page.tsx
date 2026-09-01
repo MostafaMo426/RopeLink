@@ -93,7 +93,7 @@ export default function DashboardPage() {
           <div className="space-y-8">
             <QuickActionButtons onOpenRequest={handleOpenRequest} />
 
-            {/* Dashboard Tabs: Marketplace Feed vs My Requests vs Match Proposals */}
+            {/* Dashboard Tabs */}
             <div className="flex flex-wrap items-center gap-3 border-b border-slate-800 pb-2">
               <button
                 onClick={() => setActiveTab('marketplace')}
@@ -128,7 +128,7 @@ export default function DashboardPage() {
                 }`}
               >
                 <Handshake className="w-4 h-4" />
-                <span>عروض الإسناد والمطابقة</span>
+                <span>{tDash('tabProposals')}</span>
                 {incomingPendingCount > 0 && (
                   <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-black animate-pulse">
                     {incomingPendingCount}

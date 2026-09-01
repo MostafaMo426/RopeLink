@@ -21,6 +21,7 @@ export default function MatchProposalsList({
   onUpdateStatus,
 }: MatchProposalsListProps) {
   const t = useTranslations('marketplace');
+  const tDash = useTranslations('dashboard');
   const locale = useLocale();
   const [activeTab, setActiveTab] = useState<'incoming' | 'outgoing'>('incoming');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -33,9 +34,9 @@ export default function MatchProposalsList({
     const success = await onUpdateStatus(matchId, status);
     setUpdatingId(null);
     if (success) {
-      toast.success(status === 'accepted' ? 'تم قبول عرض الإسناد بنجاح' : 'تم الاعتذار عن العرض');
+      toast.success(status === 'accepted' ? t('acceptSuccessToast') : t('declineSuccessToast'));
     } else {
-      toast.error('حدث خطأ أثناء تحديث حالة العرض');
+      toast.error(t('actionErrorToast'));
     }
   };
 
@@ -54,7 +55,7 @@ export default function MatchProposalsList({
           }`}
         >
           <ArrowDownLeft className="w-3.5 h-3.5" />
-          <span>عروض إسناد واردة ({incoming.length})</span>
+          <span>{t('incomingProposals')} ({incoming.length})</span>
         </button>
 
         <button
@@ -66,7 +67,7 @@ export default function MatchProposalsList({
           }`}
         >
           <ArrowUpRight className="w-3.5 h-3.5" />
-          <span>عروضي المرسلة ({outgoing.length})</span>
+          <span>{t('outgoingProposals')} ({outgoing.length})</span>
         </button>
       </div>
 
@@ -74,12 +75,10 @@ export default function MatchProposalsList({
         <div className="glass-panel p-8 text-center text-slate-400 rounded-2xl border-slate-800 space-y-1">
           <Handshake className="w-8 h-8 text-slate-600 mx-auto mb-2" />
           <p className="text-sm font-semibold text-white">
-            {activeTab === 'incoming' ? 'لا توجد عروض إسناد واردة حالياً' : 'لم تقم بإرسال أي عروض بعد'}
+            {activeTab === 'incoming' ? t('emptyIncomingTitle') : t('emptyOutgoingTitle')}
           </p>
           <p className="text-xs text-slate-500">
-            {activeTab === 'incoming'
-              ? 'عندما يرسل لك مقاول آخر عرض مطابقة على طلباتك ستظهر هنا فورياً.'
-              : 'تصفح سوق المقاولات والكوادر وأرسل عروض إسناد للمشاريع المتاحة.'}
+            {activeTab === 'incoming' ? t('emptyIncomingSubtitle') : t('emptyOutgoingSubtitle')}
           </p>
         </div>
       ) : (
@@ -88,8 +87,8 @@ export default function MatchProposalsList({
             const isPending = m.status === 'pending';
             const otherCompany =
               activeTab === 'incoming'
-                ? m.proposer?.company_name || 'منشأة معتمدة'
-                : m.recipient?.company_name || 'منشأة معتمدة';
+                ? m.proposer?.company_name || tDash('defaultCompany')
+                : m.recipient?.company_name || tDash('defaultCompany');
             const otherStatus =
               activeTab === 'incoming'
                 ? m.proposer?.verification_status
@@ -117,10 +116,10 @@ export default function MatchProposalsList({
                       }`}
                     >
                       {m.status === 'accepted'
-                        ? 'تم قبول العرض'
+                        ? t('statusAccepted')
                         : m.status === 'declined'
-                        ? 'تم الاعتذار'
-                        : 'بانتظار الرد'}
+                        ? t('statusDeclined')
+                        : t('statusPending')}
                     </span>
                   </div>
 
@@ -155,7 +154,7 @@ export default function MatchProposalsList({
                       className="flex-1 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
                       <Check className="w-3.5 h-3.5" />
-                      <span>قبول الإسناد</span>
+                      <span>{t('acceptMatchBtn')}</span>
                     </button>
                     <button
                       disabled={updatingId === m.id}
@@ -163,7 +162,7 @@ export default function MatchProposalsList({
                       className="py-2 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
                     >
                       <X className="w-3.5 h-3.5" />
-                      <span>اعتذار</span>
+                      <span>{t('declineMatchBtn')}</span>
                     </button>
                   </div>
                 )}

@@ -76,7 +76,8 @@
     "emptySubtitle": "Select one of the actions above to submit your first manpower request.",
     "techsCount": "Technicians",
     "tabMyRequests": "My Requests & Deployments",
-    "tabMarketplace": "B2B Marketplace Feed"
+    "tabMarketplace": "B2B Marketplace Feed",
+    "tabProposals": "Match Proposals"
   },
   "admin": {
     "consoleTitle": "Operations Control Center (Admin Console)",
@@ -115,7 +116,21 @@
     "sendProposalConfirmBtn": "Send Match Proposal",
     "submitting": "Submitting...",
     "proposalSuccessToast": "Proposal sent successfully! The recipient has been notified.",
-    "proposalErrorToast": "Failed to send proposal. Please try again."
+    "proposalErrorToast": "Failed to send proposal. Please try again.",
+    "incomingProposals": "Incoming Proposals",
+    "outgoingProposals": "Outgoing Proposals",
+    "emptyIncomingTitle": "No incoming proposals yet",
+    "emptyIncomingSubtitle": "When another contractor sends a mobilization proposal for your requests, it will appear here.",
+    "emptyOutgoingTitle": "No outgoing proposals yet",
+    "emptyOutgoingSubtitle": "Explore the marketplace and send proposals for available opportunities.",
+    "statusAccepted": "Accepted",
+    "statusDeclined": "Declined",
+    "statusPending": "Pending Response",
+    "acceptMatchBtn": "Accept Match",
+    "declineMatchBtn": "Decline",
+    "acceptSuccessToast": "Match proposal accepted successfully",
+    "declineSuccessToast": "Match proposal declined",
+    "actionErrorToast": "Error updating proposal status"
   },
   "matching": {
     "compatibility": "Match Compatibility",

@@ -76,7 +76,8 @@
     "emptySubtitle": "اختر أحد الإجراءات أعلاه لإنشاء أول طلب إسناد في منصة RopeLink.",
     "techsCount": "فنيين",
     "tabMyRequests": "طلباتي وإسناداتي",
-    "tabMarketplace": "سوق الفرص والكوادر"
+    "tabMarketplace": "سوق الفرص والكوادر",
+    "tabProposals": "عروض الإسناد والمطابقة"
   },
   "admin": {
     "consoleTitle": "مركز العمليات وإدارة المنظومة (Admin Console)",
@@ -115,7 +116,21 @@
     "sendProposalConfirmBtn": "تأكيد وإرسال العرض",
     "submitting": "جاري الإرسال...",
     "proposalSuccessToast": "تم إرسال عرض الإسناد بنجاح! سيتم إشعار الطرف الآخر.",
-    "proposalErrorToast": "فشل إرسال العرض، يرجى المحاولة لاحقاً."
+    "proposalErrorToast": "فشل إرسال العرض، يرجى المحاولة لاحقاً.",
+    "incomingProposals": "عروض إسناد واردة",
+    "outgoingProposals": "عروضي المرسلة",
+    "emptyIncomingTitle": "لا توجد عروض إسناد واردة حالياً",
+    "emptyIncomingSubtitle": "عندما يرسل لك مقاول آخر عرض مطابقة على طلباتك ستظهر هنا فورياً.",
+    "emptyOutgoingTitle": "لم تقم بإرسال أي عروض بعد",
+    "emptyOutgoingSubtitle": "تصفح سوق المقاولات والكوادر وأرسل عروض إسناد للمشاريع المتاحة.",
+    "statusAccepted": "تم قبول العرض",
+    "statusDeclined": "تم الاعتذار",
+    "statusPending": "بانتظار الرد",
+    "acceptMatchBtn": "قبول الإسناد",
+    "declineMatchBtn": "اعتذار",
+    "acceptSuccessToast": "تم قبول عرض الإسناد بنجاح",
+    "declineSuccessToast": "تم الاعتذار عن العرض",
+    "actionErrorToast": "حدث خطأ أثناء تحديث حالة العرض"
   },
   "matching": {
     "compatibility": "نسبة التطابق الميداني",

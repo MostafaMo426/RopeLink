@@ -21,6 +21,7 @@ export default function DashboardHeader({
   onSignOut,
 }: DashboardHeaderProps) {
   const t = useTranslations('dashboard');
+  const tNav = useTranslations('nav');
   const locale = useLocale();
 
   const isAdmin = profile?.role === 'admin';
@@ -73,7 +74,7 @@ export default function DashboardHeader({
           className="px-3.5 py-2 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-xs font-semibold text-red-400 transition-all flex items-center gap-1.5 cursor-pointer"
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span>تسجيل الخروج</span>
+          <span>{tNav('logout')}</span>
         </button>
       </div>
     </div>

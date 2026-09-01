@@ -22,7 +22,10 @@ export default function DashboardHeader({
   const tDash = useTranslations('dashboard');
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+    <div
+      id="tour-header"
+      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800"
+    >
       <div>
         <div className="flex items-center gap-2 mb-1">
           <Building2 className="w-5 h-5 text-amber-500" />

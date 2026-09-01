@@ -23,10 +23,16 @@ export default function DashboardPage() {
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<RequestType>('project');
   const [tourKey, setTourKey] = useState(0);
+  const [forceTour, setForceTour] = useState(false);
 
   const openRequest = (type: RequestType) => {
     setSelectedType(type);
     setRequestModalOpen(true);
+  };
+
+  const handleRestartTour = () => {
+    setForceTour(true);
+    setTourKey((k) => k + 1);
   };
 
   const handleSignOut = async () => {
@@ -41,6 +47,8 @@ export default function DashboardPage() {
           key={tourKey}
           user={user}
           hasSeenTutorial={profile?.has_seen_tutorial ?? false}
+          forceStart={forceTour}
+          onTourComplete={() => setForceTour(false)}
         />
       )}
 
@@ -50,7 +58,7 @@ export default function DashboardPage() {
         <DashboardHeader
           user={user}
           profile={profile}
-          onRestartTour={() => setTourKey((k) => k + 1)}
+          onRestartTour={handleRestartTour}
           onSignOut={handleSignOut}
         />
 

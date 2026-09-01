@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { driver, DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
@@ -9,21 +9,22 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 interface GuidedTourProps {
   user: any;
   hasSeenTutorial: boolean;
+  forceStart?: boolean;
   onTourComplete?: () => void;
 }
 
 export default function GuidedTour({
   user,
   hasSeenTutorial,
+  forceStart = false,
   onTourComplete,
 }: GuidedTourProps) {
   const t = useTranslations('tour');
-  const locale = useLocale();
-  const hasStartedRef = useRef(false);
+  const driverInstanceRef = useRef<any>(null);
 
   useEffect(() => {
-    if (hasSeenTutorial || hasStartedRef.current) return;
-    hasStartedRef.current = true;
+    // If returning user and not explicitly restarting, do not auto-launch
+    if (hasSeenTutorial && !forceStart) return;
 
     const markTutorialAsSeen = async () => {
       if (user?.id && isSupabaseConfigured()) {
@@ -33,10 +34,12 @@ export default function GuidedTour({
             .update({ has_seen_tutorial: true })
             .eq('id', user.id);
         } catch (e) {
-          console.error('Error updating tutorial flag', e);
+          console.warn('Error updating tutorial flag', e);
         }
       }
-      localStorage.setItem('ropelink_has_seen_tutorial', 'true');
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ropelink_has_seen_tutorial', 'true');
+      }
       onTourComplete?.();
     };
 
@@ -51,6 +54,15 @@ export default function GuidedTour({
         },
       },
       {
+        element: '#tour-header',
+        popover: {
+          title: t('navTitle'),
+          description: t('navDesc'),
+          side: 'bottom',
+          align: 'center',
+        },
+      },
+      {
         element: '#tour-ctas',
         popover: {
           title: t('ctaTitle'),
@@ -60,7 +72,7 @@ export default function GuidedTour({
         },
       },
       {
-        element: '#tour-stats',
+        element: '#tour-requests',
         popover: {
           title: t('statsTitle'),
           description: t('statsDesc'),
@@ -85,15 +97,24 @@ export default function GuidedTour({
       },
     });
 
+    driverInstanceRef.current = driverObj;
+
+    // Small delay to ensure all DOM elements are mounted and painted
     const timer = setTimeout(() => {
-      driverObj.drive();
-    }, 600);
+      try {
+        driverObj.drive();
+      } catch (err) {
+        console.warn('Driver.js drive start warning:', err);
+      }
+    }, 400);
 
     return () => {
       clearTimeout(timer);
-      driverObj.destroy();
+      if (driverInstanceRef.current) {
+        driverInstanceRef.current.destroy();
+      }
     };
-  }, [hasSeenTutorial, user, t, onTourComplete]);
+  }, [hasSeenTutorial, forceStart, user, t, onTourComplete]);
 
   return null;
 }

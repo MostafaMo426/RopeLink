@@ -15,7 +15,7 @@ export default function RequestsList({ requests, loading }: RequestsListProps) {
   const t = useTranslations('dashboard');
 
   return (
-    <div className="space-y-4">
+    <div id="tour-requests" className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-white">{t('activityTitle')}</h2>
         <span className="text-xs text-slate-400">

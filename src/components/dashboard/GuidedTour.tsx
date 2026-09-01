@@ -10,33 +10,37 @@ import { Profile } from '@/types/database';
 interface GuidedTourProps {
   user: any;
   profile: Profile | null;
-  forceStart?: boolean;
-  onTourComplete?: () => void;
+  restartCounter: number;
 }
 
 export default function GuidedTour({
   user,
   profile,
-  forceStart = false,
-  onTourComplete,
+  restartCounter,
 }: GuidedTourProps) {
   const t = useTranslations('tour');
   const driverRef = useRef<Driver | null>(null);
-  const isRunningRef = useRef(false);
+  const initialRunDoneRef = useRef(false);
+  const lastHandledRestartRef = useRef(0);
 
   useEffect(() => {
-    // Only proceed if profile is fully loaded
     if (!profile || !user) return;
 
-    // If user has already seen tutorial and this is not a manual restart, exit immediately
-    if (profile.has_seen_tutorial && !forceStart) return;
+    const shouldRunInitial = !profile.has_seen_tutorial && !initialRunDoneRef.current;
+    const shouldRunRestart = restartCounter > 0 && restartCounter !== lastHandledRestartRef.current;
 
-    // Prevent duplicate simultaneous executions
-    if (isRunningRef.current && !forceStart) return;
-    isRunningRef.current = true;
+    if (!shouldRunInitial && !shouldRunRestart) {
+      return;
+    }
 
-    const finalizeTour = async () => {
-      isRunningRef.current = false;
+    if (shouldRunInitial) {
+      initialRunDoneRef.current = true;
+    }
+    if (shouldRunRestart) {
+      lastHandledRestartRef.current = restartCounter;
+    }
+
+    const markTutorialAsSeen = async () => {
       if (user?.id && isSupabaseConfigured()) {
         try {
           await supabase
@@ -50,49 +54,89 @@ export default function GuidedTour({
       if (typeof window !== 'undefined') {
         localStorage.setItem('ropelink_has_seen_tutorial', 'true');
       }
-      onTourComplete?.();
     };
 
-    const steps: DriveStep[] = [
-      {
-        element: '#tour-navbar',
-        popover: {
-          title: t('welcomeTitle'),
-          description: t('welcomeDesc'),
-          side: 'bottom',
-          align: 'center',
-        },
-      },
-      {
-        element: '#tour-header',
-        popover: {
-          title: t('navTitle'),
-          description: t('navDesc'),
-          side: 'bottom',
-          align: 'center',
-        },
-      },
-      {
-        element: '#tour-ctas',
-        popover: {
-          title: t('ctaTitle'),
-          description: t('ctaDesc'),
-          side: 'top',
-          align: 'center',
-        },
-      },
-      {
-        element: '#tour-requests',
-        popover: {
-          title: t('statsTitle'),
-          description: t('statsDesc'),
-          side: 'top',
-          align: 'center',
-        },
-      },
-    ];
+    const isAdmin = profile.role === 'admin';
 
-    // Clean up any previously existing instance
+    const steps: DriveStep[] = isAdmin
+      ? [
+          {
+            element: '#tour-navbar',
+            popover: {
+              title: t('welcomeTitle'),
+              description: t('welcomeDesc'),
+              side: 'bottom',
+              align: 'center',
+            },
+          },
+          {
+            element: '#tour-header',
+            popover: {
+              title: t('navTitle'),
+              description: t('navDesc'),
+              side: 'bottom',
+              align: 'center',
+            },
+          },
+          {
+            element: '#tour-admin-console',
+            popover: {
+              title: t('adminConsoleTitle'),
+              description: t('adminConsoleDesc'),
+              side: 'bottom',
+              align: 'center',
+            },
+          },
+          {
+            element: '#tour-admin-feed',
+            popover: {
+              title: t('adminFeedTitle'),
+              description: t('adminFeedDesc'),
+              side: 'top',
+              align: 'center',
+            },
+          },
+        ]
+      : [
+          {
+            element: '#tour-navbar',
+            popover: {
+              title: t('welcomeTitle'),
+              description: t('welcomeDesc'),
+              side: 'bottom',
+              align: 'center',
+            },
+          },
+          {
+            element: '#tour-header',
+            popover: {
+              title: t('navTitle'),
+              description: t('navDesc'),
+              side: 'bottom',
+              align: 'center',
+            },
+          },
+          {
+            element: '#tour-ctas',
+            popover: {
+              title: t('ctaTitle'),
+              description: t('ctaDesc'),
+              side: 'top',
+              align: 'center',
+            },
+          },
+          {
+            element: '#tour-requests',
+            popover: {
+              title: t('statsTitle'),
+              description: t('statsDesc'),
+              side: 'top',
+              align: 'center',
+            },
+          },
+        ];
+
+    // Clean up any previous driver instance
     if (driverRef.current) {
       try {
         driverRef.current.destroy();
@@ -109,14 +153,13 @@ export default function GuidedTour({
       doneBtnText: t('doneBtn'),
       steps: steps,
       onDestroyStarted: () => {
-        finalizeTour();
+        markTutorialAsSeen();
         driverObj.destroy();
       },
     });
 
     driverRef.current = driverObj;
 
-    // Delay slightly to ensure complete DOM mount
     const timer = setTimeout(() => {
       try {
         driverObj.drive();
@@ -127,13 +170,8 @@ export default function GuidedTour({
 
     return () => {
       clearTimeout(timer);
-      if (driverRef.current) {
-        try {
-          driverRef.current.destroy();
-        } catch {}
-      }
     };
-  }, [user, profile, forceStart, t, onTourComplete]);
+  }, [user, profile, restartCounter, t]);
 
   return null;
 }

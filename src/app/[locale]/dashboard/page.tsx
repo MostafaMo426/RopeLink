@@ -26,8 +26,7 @@ export default function DashboardPage() {
 
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<RequestType>('project');
-  const [tourKey, setTourKey] = useState(0);
-  const [forceTour, setForceTour] = useState(false);
+  const [restartCounter, setRestartCounter] = useState(0);
 
   const isAdmin = profile?.role === 'admin';
 
@@ -37,8 +36,7 @@ export default function DashboardPage() {
   };
 
   const handleRestartTour = () => {
-    setForceTour(true);
-    setTourKey((k) => k + 1);
+    setRestartCounter((c) => c + 1);
   };
 
   const handleSignOut = async () => {
@@ -50,11 +48,9 @@ export default function DashboardPage() {
     <div className="min-h-screen flex flex-col bg-[#07090E]">
       {user && profile && (
         <GuidedTour
-          key={tourKey}
           user={user}
           profile={profile}
-          forceStart={forceTour}
-          onTourComplete={() => setForceTour(false)}
+          restartCounter={restartCounter}
         />
       )}
 

@@ -136,6 +136,10 @@
     "ctaDesc": "Use these actions to post project requirements, request skilled crews, or monetize your bench capacity.",
     "statsTitle": "Live Activity & Deployments",
     "statsDesc": "Track your organization's submitted requests and real-time mobilization statuses.",
+    "adminConsoleTitle": "Operations Control Center 🛠️",
+    "adminConsoleDesc": "Oversee all contractor and supplier requests across the Kingdom with instant status filters.",
+    "adminFeedTitle": "Central Feed & Live Status Management",
+    "adminFeedDesc": "Update request stages directly (Pending, Reviewing, Matched, In Progress) with live database synchronization.",
     "nextBtn": "Next",
     "prevBtn": "Previous",
     "doneBtn": "Get Started"

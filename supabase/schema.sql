@@ -1,6 +1,6 @@
 -- ==============================================================================
--- RopeLink B2B Manpower Marketplace - Supabase PostgreSQL Schema
--- Phase 3: Digital Turnaround Agreements, Real-Time Messaging & Mobilization
+-- RopeLink B2B Manpower Marketplace - Supabase PostgreSQL Master Schema
+-- Phase 3: Turnaround Agreements, Real-Time Messaging & Ajeer Mobilization
 -- ==============================================================================
 
 -- 1. Custom Types & ENUMs (Independent Safe Blocks)
@@ -149,7 +149,29 @@ CREATE POLICY "Agreement parties can view and manage roster" ON public.crew_rost
     EXISTS (SELECT 1 FROM public.agreements a WHERE a.id = crew_rosters.agreement_id AND (a.proposer_id = auth.uid() OR a.recipient_id = auth.uid()))
 );
 
--- 10. Realtime Publications
+-- 10. Automated Profile Creation Trigger
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+DECLARE v_role user_role := 'contractor'; v_company TEXT := '';
+BEGIN
+    IF NEW.raw_user_meta_data IS NOT NULL THEN
+        IF (NEW.raw_user_meta_data->>'role') = 'supplier' THEN v_role := 'supplier';
+        ELSIF (NEW.raw_user_meta_data->>'role') = 'admin' THEN v_role := 'admin';
+        ELSE v_role := 'contractor'; END IF;
+        v_company := COALESCE(NEW.raw_user_meta_data->>'company_name', '');
+    END IF;
+    INSERT INTO public.profiles (id, company_name, role, city, verification_status, has_seen_tutorial)
+    VALUES (NEW.id, v_company, v_role, 'Riyadh', 'unverified', FALSE)
+    ON CONFLICT (id) DO UPDATE SET company_name = EXCLUDED.company_name, role = EXCLUDED.role;
+    RETURN NEW;
+EXCEPTION WHEN OTHERS THEN RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth, pg_temp;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 11. Realtime Publications
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.requests; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.matches; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.agreements; EXCEPTION WHEN OTHERS THEN NULL; END $$;

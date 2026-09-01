@@ -65,6 +65,17 @@ export interface ManpowerRequest {
   profiles?: Profile | null;
 }
 
+export interface CreateRequestInput {
+  company_name: string;
+  contact_phone?: string;
+  type: RequestType;
+  city: SaudiCity;
+  start_date: string;
+  technician_count: number;
+  specialty: string;
+  notes?: string;
+}
+
 export interface MatchProposal {
   id: string;
   request_id: string;

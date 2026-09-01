@@ -86,6 +86,8 @@
     "filterMatched": "Matched",
     "filterInProgress": "In Progress",
     "filterCompleted": "Completed",
+    "filterCompany": "Filter by Company",
+    "allCompanies": "All Registered Companies",
     "statusUpdate": "Update Status",
     "statusUpdatedToast": "Request status successfully updated in database",
     "statusUpdateError": "Failed to update status"

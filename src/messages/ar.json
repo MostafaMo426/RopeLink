@@ -86,6 +86,8 @@
     "filterMatched": "تمت المطابقة",
     "filterInProgress": "قيد التنفيذ",
     "filterCompleted": "مكتمل",
+    "filterCompany": "تصفية حسب المنشأة",
+    "allCompanies": "كافة المنشآت المسجلة",
     "statusUpdate": "تحديث الحالة",
     "statusUpdatedToast": "تم تحديث حالة الطلب بنجاح في قاعدة البيانات",
     "statusUpdateError": "فشل تحديث الحالة"

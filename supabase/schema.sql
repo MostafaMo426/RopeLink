@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- RopeLink B2B Manpower Marketplace - Supabase PostgreSQL Schema
--- Phase 1 & Admin Operations Edition
+-- Non-Recursive, High-Performance RLS Edition
 -- ==============================================================================
 
 -- 1. Custom Types & ENUMs
@@ -81,50 +81,47 @@ CREATE TABLE IF NOT EXISTS public.requests (
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.requests ENABLE ROW LEVEL SECURITY;
 
--- 5. Helper Function: Is Admin
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN EXISTS (
-        SELECT 1 FROM public.profiles
-        WHERE id = auth.uid() AND role = 'admin'
-    );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth, pg_temp;
-
--- 6. Profiles RLS Policies (Users see own profile, Admins see all)
+-- 5. Profiles RLS Policies (Zero Recursion: Direct Primary Key Match)
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 CREATE POLICY "Users can view own profile"
     ON public.profiles FOR SELECT
-    USING (auth.uid() = id OR public.is_admin());
+    USING (auth.uid() = id);
 
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile"
     ON public.profiles FOR UPDATE
-    USING (auth.uid() = id OR public.is_admin());
+    USING (auth.uid() = id);
 
 DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 CREATE POLICY "Users can insert own profile"
     ON public.profiles FOR INSERT
-    WITH CHECK (auth.uid() = id OR public.is_admin());
+    WITH CHECK (auth.uid() = id);
 
--- 7. Requests RLS Policies (Users see own, Admins see and manage all)
+-- 6. Requests RLS Policies (Users see own, Admins see all)
 DROP POLICY IF EXISTS "Users can view own requests" ON public.requests;
-CREATE POLICY "Users can view own requests"
+DROP POLICY IF EXISTS "Users can view requests" ON public.requests;
+CREATE POLICY "Users can view requests"
     ON public.requests FOR SELECT
-    USING (auth.uid() = user_id OR public.is_admin());
+    USING (
+        auth.uid() = user_id 
+        OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
+    );
 
 DROP POLICY IF EXISTS "Users can insert requests" ON public.requests;
 CREATE POLICY "Users can insert requests"
     ON public.requests FOR INSERT
-    WITH CHECK (auth.uid() = user_id OR user_id IS NULL OR public.is_admin());
+    WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
 
 DROP POLICY IF EXISTS "Users can update own requests" ON public.requests;
-CREATE POLICY "Users can update own requests"
+DROP POLICY IF EXISTS "Users can update requests" ON public.requests;
+CREATE POLICY "Users can update requests"
     ON public.requests FOR UPDATE
-    USING (auth.uid() = user_id OR public.is_admin());
+    USING (
+        auth.uid() = user_id 
+        OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
+    );
 
--- 8. Automated Profile Creation Trigger
+-- 7. Automated Fail-Safe Profile Creation Trigger on Auth Signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -160,7 +157,7 @@ CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 9. Updated At Timestamp Function & Triggers
+-- 8. Updated At Timestamp Function & Triggers
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -179,7 +176,7 @@ CREATE TRIGGER set_requests_updated_at
     BEFORE UPDATE ON public.requests
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
--- 10. Permissions & Performance Indexes
+-- 9. Permissions & Indexes
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.profiles TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.requests TO anon, authenticated, service_role;

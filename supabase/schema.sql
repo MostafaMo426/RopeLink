@@ -3,17 +3,30 @@
 -- Phase 2: Real-time Matching, Verification & Marketplace Edition
 -- ==============================================================================
 
--- 1. Custom Types & ENUMs
+-- 1. Custom Types & ENUMs (Independent Safe Blocks)
 DO $$ BEGIN
     CREATE TYPE user_role AS ENUM ('contractor', 'supplier', 'admin');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
     CREATE TYPE request_type AS ENUM ('project', 'need_manpower', 'available_crew');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
     CREATE TYPE request_status AS ENUM ('pending', 'reviewing', 'matched', 'in_progress', 'completed', 'cancelled');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
     CREATE TYPE verification_status AS ENUM ('unverified', 'pending_review', 'verified', 'rejected');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
     CREATE TYPE match_status AS ENUM ('pending', 'accepted', 'declined', 'completed');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
     CREATE TYPE saudi_city AS ENUM ('Riyadh', 'Jeddah', 'Dammam', 'Jubail', 'Yanbu', 'NEOM', 'Khobar', 'Ras Al-Khair', 'Tabuk', 'Jazan', 'Other');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- 2. Profiles Table (with Verification & Credentials)
 CREATE TABLE IF NOT EXISTS public.profiles (
@@ -30,6 +43,10 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     created_at TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW())
 );
+
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS verification_status verification_status NOT NULL DEFAULT 'unverified';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS cr_document_url TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS hse_document_url TEXT;
 
 -- 3. Requests Table
 CREATE TABLE IF NOT EXISTS public.requests (
@@ -79,12 +96,16 @@ CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH 
 
 -- 7. Requests RLS Policies (Open Marketplace Discovery)
 DROP POLICY IF EXISTS "Anyone can view requests" ON public.requests;
+DROP POLICY IF EXISTS "Users can view own requests" ON public.requests;
+DROP POLICY IF EXISTS "Users can view requests" ON public.requests;
 CREATE POLICY "Anyone can view requests" ON public.requests FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Users can insert requests" ON public.requests;
 CREATE POLICY "Users can insert requests" ON public.requests FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
 
 DROP POLICY IF EXISTS "Users and Admins can update requests" ON public.requests;
+DROP POLICY IF EXISTS "Users can update own requests" ON public.requests;
+DROP POLICY IF EXISTS "Users can update requests" ON public.requests;
 CREATE POLICY "Users and Admins can update requests" ON public.requests FOR UPDATE USING (
     auth.uid() = user_id OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
 );
@@ -154,9 +175,8 @@ GRANT ALL ON TABLE public.profiles TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.requests TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.matches TO anon, authenticated, service_role;
 
--- Enable Realtime Publication for live subscriptions
-ALTER PUBLICATION supabase_realtime ADD TABLE public.requests;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.matches;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.requests; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.matches; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 CREATE INDEX IF NOT EXISTS idx_requests_city_type ON public.requests(city, type);
 CREATE INDEX IF NOT EXISTS idx_matches_request_id ON public.matches(request_id);

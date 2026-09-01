@@ -8,20 +8,32 @@ import { Building2, Phone, MapPin, Calendar, Users, Wrench } from 'lucide-react'
 
 interface RequestFormProps {
   type: RequestType;
+  defaultCompanyName?: string;
   onSubmit: (input: CreateRequestInput) => Promise<void>;
   loading?: boolean;
 }
 
-export default function RequestForm({ type, onSubmit, loading }: RequestFormProps) {
+export default function RequestForm({
+  type,
+  defaultCompanyName = '',
+  onSubmit,
+  loading,
+}: RequestFormProps) {
   const t = useTranslations('requestModal');
   const locale = useLocale();
-  const [companyName, setCompanyName] = useState('');
+  const [companyName, setCompanyName] = useState(defaultCompanyName);
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState<SaudiCity>('Jubail');
   const [startDate, setStartDate] = useState('');
   const [count, setCount] = useState(4);
   const [specialty, setSpecialty] = useState(locale === 'ar' ? SPECIALTIES[0].ar : SPECIALTIES[0].en);
   const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (defaultCompanyName) {
+      setCompanyName(defaultCompanyName);
+    }
+  }, [defaultCompanyName]);
 
   useEffect(() => {
     const d = new Date();

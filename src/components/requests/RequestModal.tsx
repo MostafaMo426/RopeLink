@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { RequestType, CreateRequestInput } from '@/types/database';
+import { RequestType, CreateRequestInput, Profile } from '@/types/database';
 import { REQUEST_TYPE_META } from '@/lib/constants';
 import RequestForm from './RequestForm';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
@@ -15,6 +15,7 @@ interface RequestModalProps {
   onClose: () => void;
   type: RequestType;
   user?: any;
+  profile?: Profile | null;
   onCreated?: () => void;
 }
 
@@ -23,6 +24,7 @@ export default function RequestModal({
   onClose,
   type,
   user,
+  profile,
   onCreated,
 }: RequestModalProps) {
   const t = useTranslations('requestModal');
@@ -98,7 +100,12 @@ export default function RequestModal({
         </div>
 
         <div className="mt-5">
-          <RequestForm type={type} onSubmit={handleSubmit} loading={loading} />
+          <RequestForm
+            type={type}
+            defaultCompanyName={profile?.company_name || ''}
+            onSubmit={handleSubmit}
+            loading={loading}
+          />
         </div>
       </motion.div>
     </div>

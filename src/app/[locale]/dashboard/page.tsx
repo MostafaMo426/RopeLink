@@ -42,11 +42,11 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#07090E]">
-      {user && (
+      {user && profile && (
         <GuidedTour
           key={tourKey}
           user={user}
-          hasSeenTutorial={profile?.has_seen_tutorial ?? false}
+          profile={profile}
           forceStart={forceTour}
           onTourComplete={() => setForceTour(false)}
         />
@@ -102,6 +102,7 @@ export default function DashboardPage() {
         onClose={() => setRequestModalOpen(false)}
         type={selectedType}
         user={user}
+        profile={profile}
         onCreated={refreshRequests}
       />
     </div>

@@ -2,31 +2,41 @@
 
 import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { driver, DriveStep } from 'driver.js';
+import { driver, Driver, DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { Profile } from '@/types/database';
 
 interface GuidedTourProps {
   user: any;
-  hasSeenTutorial: boolean;
+  profile: Profile | null;
   forceStart?: boolean;
   onTourComplete?: () => void;
 }
 
 export default function GuidedTour({
   user,
-  hasSeenTutorial,
+  profile,
   forceStart = false,
   onTourComplete,
 }: GuidedTourProps) {
   const t = useTranslations('tour');
-  const driverInstanceRef = useRef<any>(null);
+  const driverRef = useRef<Driver | null>(null);
+  const isRunningRef = useRef(false);
 
   useEffect(() => {
-    // If returning user and not explicitly restarting, do not auto-launch
-    if (hasSeenTutorial && !forceStart) return;
+    // Only proceed if profile is fully loaded
+    if (!profile || !user) return;
 
-    const markTutorialAsSeen = async () => {
+    // If user has already seen tutorial and this is not a manual restart, exit immediately
+    if (profile.has_seen_tutorial && !forceStart) return;
+
+    // Prevent duplicate simultaneous executions
+    if (isRunningRef.current && !forceStart) return;
+    isRunningRef.current = true;
+
+    const finalizeTour = async () => {
+      isRunningRef.current = false;
       if (user?.id && isSupabaseConfigured()) {
         try {
           await supabase
@@ -34,7 +44,7 @@ export default function GuidedTour({
             .update({ has_seen_tutorial: true })
             .eq('id', user.id);
         } catch (e) {
-          console.warn('Error updating tutorial flag', e);
+          console.warn('Error saving tutorial status', e);
         }
       }
       if (typeof window !== 'undefined') {
@@ -82,6 +92,13 @@ export default function GuidedTour({
       },
     ];
 
+    // Clean up any previously existing instance
+    if (driverRef.current) {
+      try {
+        driverRef.current.destroy();
+      } catch {}
+    }
+
     const driverObj = driver({
       showProgress: true,
       animate: true,
@@ -92,29 +109,31 @@ export default function GuidedTour({
       doneBtnText: t('doneBtn'),
       steps: steps,
       onDestroyStarted: () => {
-        markTutorialAsSeen();
+        finalizeTour();
         driverObj.destroy();
       },
     });
 
-    driverInstanceRef.current = driverObj;
+    driverRef.current = driverObj;
 
-    // Small delay to ensure all DOM elements are mounted and painted
+    // Delay slightly to ensure complete DOM mount
     const timer = setTimeout(() => {
       try {
         driverObj.drive();
       } catch (err) {
-        console.warn('Driver.js drive start warning:', err);
+        console.warn('Driver.js execution warning:', err);
       }
-    }, 400);
+    }, 450);
 
     return () => {
       clearTimeout(timer);
-      if (driverInstanceRef.current) {
-        driverInstanceRef.current.destroy();
+      if (driverRef.current) {
+        try {
+          driverRef.current.destroy();
+        } catch {}
       }
     };
-  }, [hasSeenTutorial, forceStart, user, t, onTourComplete]);
+  }, [user, profile, forceStart, t, onTourComplete]);
 
   return null;
 }

@@ -23,8 +23,7 @@ export default function VerificationModal({
 }: VerificationModalProps) {
   const t = useTranslations('verification');
   const [crNumber, setCrNumber] = useState(profile?.cr_number || '');
-  const [docName, setDocName] = useState('');
-  const [docDataUrl, setDocDataUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -32,16 +31,11 @@ export default function VerificationModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size exceeds 5MB limit');
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size exceeds 10MB limit');
         return;
       }
-      setDocName(file.name);
-      const reader = new FileReader();
-      reader.onload = () => {
-        setDocDataUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setSelectedFile(file);
     }
   };
 
@@ -51,12 +45,38 @@ export default function VerificationModal({
 
     setLoading(true);
     try {
+      let finalDocUrl: string | null = profile.cr_document_url || null;
+
+      if (selectedFile && isSupabaseConfigured()) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${profile.id}_${Date.now()}.${fileExt}`;
+        
+        // 1. Upload to Supabase Storage 'verification-docs' bucket
+        const { data: uploadData, error: uploadErr } = await supabase.storage
+          .from('verification-docs')
+          .upload(fileName, selectedFile, { upsert: true });
+
+        if (!uploadErr && uploadData) {
+          const { data: urlData } = supabase.storage
+            .from('verification-docs')
+            .getPublicUrl(fileName);
+          finalDocUrl = urlData.publicUrl;
+        } else {
+          // Fallback to Data URL if bucket upload is not available
+          finalDocUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(selectedFile);
+          });
+        }
+      }
+
       if (isSupabaseConfigured()) {
         const { error } = await supabase
           .from('profiles')
           .update({
             cr_number: crNumber.trim(),
-            cr_document_url: docDataUrl || (docName ? `document_${docName}` : null),
+            cr_document_url: finalDocUrl,
             verification_status: 'pending_review',
           })
           .eq('id', profile.id);
@@ -127,10 +147,10 @@ export default function VerificationModal({
               {t('uploadLabel')} (PDF / JPEG / PNG)
             </label>
             <div className="p-4 rounded-xl border border-dashed border-slate-700 bg-slate-900/50 hover:border-amber-500/50 transition-colors text-center cursor-pointer">
-              {docName ? (
+              {selectedFile ? (
                 <div className="flex items-center justify-center gap-2 text-emerald-400 mb-1">
                   <CheckCircle className="w-6 h-6" />
-                  <span className="text-xs font-bold text-white truncate max-w-xs">{docName}</span>
+                  <span className="text-xs font-bold text-white truncate max-w-xs">{selectedFile.name}</span>
                 </div>
               ) : (
                 <UploadCloud className="w-8 h-8 text-amber-400 mx-auto mb-2" />

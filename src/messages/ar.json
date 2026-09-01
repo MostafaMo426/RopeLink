@@ -76,6 +76,20 @@
     "emptySubtitle": "اختر أحد الإجراءات أعلاه لإنشاء أول طلب إسناد في منصة RopeLink.",
     "techsCount": "فنيين"
   },
+  "admin": {
+    "consoleTitle": "مركز العمليات وإدارة المنظومة (Admin Console)",
+    "consoleSubtitle": "متابعة وتحديث كافة طلبات المقاولين وتسكين الكوادر الفنية في المملكة",
+    "allRequests": "سجل الطلبات والإسنادات المركزية",
+    "filterAll": "الكل",
+    "filterPending": "قيد المراجعة",
+    "filterReviewing": "قيد التدقيق",
+    "filterMatched": "تمت المطابقة",
+    "filterInProgress": "قيد التنفيذ",
+    "filterCompleted": "مكتمل",
+    "statusUpdate": "تحديث الحالة",
+    "statusUpdatedToast": "تم تحديث حالة الطلب بنجاح في قاعدة البيانات",
+    "statusUpdateError": "فشل تحديث الحالة"
+  },
   "requestModal": {
     "titleProject": "تسجيل متطلبات مشروع جديد",
     "titleManpower": "طلب إسناد فنيين وكوادر مؤهلة",

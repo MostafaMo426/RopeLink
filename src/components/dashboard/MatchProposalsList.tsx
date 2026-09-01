@@ -6,6 +6,7 @@ import { MatchProposal, MatchStatus } from '@/types/database';
 import { Handshake, Check, X, ArrowDownLeft, ArrowUpRight, MessageSquare, MapPin } from 'lucide-react';
 import { getCityLabel, getSpecialtyLabel } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
+import TrustBadge from '@/components/verification/TrustBadge';
 import { toast } from 'sonner';
 
 interface MatchProposalsListProps {
@@ -89,6 +90,10 @@ export default function MatchProposalsList({
               activeTab === 'incoming'
                 ? m.proposer?.company_name || 'منشأة معتمدة'
                 : m.recipient?.company_name || 'منشأة معتمدة';
+            const otherStatus =
+              activeTab === 'incoming'
+                ? m.proposer?.verification_status
+                : m.recipient?.verification_status;
 
             return (
               <div
@@ -97,10 +102,11 @@ export default function MatchProposalsList({
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5">
                       <Handshake className="w-4 h-4 text-amber-400" />
-                      {otherCompany}
-                    </span>
+                      <span className="text-xs font-bold text-white">{otherCompany}</span>
+                      <TrustBadge status={otherStatus || 'unverified'} variant="icon" />
+                    </div>
                     <span
                       className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
                         m.status === 'accepted'

@@ -5,6 +5,7 @@ import { ManpowerRequest, RequestStatus } from '@/types/database';
 import { MapPin, Users, Calendar, Phone } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { getCityLabel, getStatusLabel, getSpecialtyLabel } from '@/lib/constants';
+import TrustBadge from '@/components/verification/TrustBadge';
 
 interface AdminRequestCardProps {
   request: ManpowerRequest;
@@ -47,7 +48,11 @@ export default function AdminRequestCard({
           </div>
         </div>
 
-        <h3 className="font-bold text-white text-base">{req.company_name}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-bold text-white text-base">{req.company_name}</h3>
+          <TrustBadge status={req.profiles?.verification_status || 'unverified'} variant="icon" />
+        </div>
+
         {req.notes && <p className="text-xs text-slate-400 line-clamp-2">{req.notes}</p>}
       </div>
 

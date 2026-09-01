@@ -21,7 +21,7 @@ export function useRequests(userId?: string, role?: UserRole) {
       if (isSupabaseConfigured()) {
         let query = supabase
           .from('requests')
-          .select('*')
+          .select('*, profiles(*)')
           .order('created_at', { ascending: false });
 
         // If regular contractor/supplier, restrict query to their own user_id

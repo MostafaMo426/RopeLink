@@ -1,10 +1,11 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { Building2, Mail, ShieldCheck, HelpCircle } from 'lucide-react';
-import { Profile } from '@/types/database';
 import { User } from '@supabase/supabase-js';
+import { Profile } from '@/types/database';
+import { Building2, LogOut, Compass, MapPin, Mail } from 'lucide-react';
 import { getCityLabel } from '@/lib/constants';
+import TrustBadge from '@/components/verification/TrustBadge';
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -19,57 +20,60 @@ export default function DashboardHeader({
   onRestartTour,
   onSignOut,
 }: DashboardHeaderProps) {
+  const t = useTranslations('dashboard');
   const locale = useLocale();
-  const t = useTranslations('nav');
-  const tDash = useTranslations('dashboard');
 
-  const cityDisplay = profile?.city
-    ? getCityLabel(profile.city, locale)
-    : tDash('defaultLocation');
+  const isAdmin = profile?.role === 'admin';
+  const roleLabel = isAdmin ? 'ADMIN' : profile?.role ? profile.role.toUpperCase() : 'USER';
+  const companyName = profile?.company_name || user?.user_metadata?.company_name || t('defaultCompany');
+  const city = profile?.city || 'Riyadh';
 
   return (
-    <div
-      id="tour-header"
-      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800"
-    >
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Building2 className="w-5 h-5 text-amber-500" />
-          <h1 className="text-xl sm:text-2xl font-black text-white">
-            {profile?.company_name || user?.email?.split('@')[0] || tDash('defaultCompany')}
-          </h1>
-          {profile?.role && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold uppercase">
-              {profile.role}
-            </span>
-          )}
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex items-center gap-3">
+        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
+          <Building2 className="w-6 h-6" />
         </div>
-        <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-400">
-          <span className="flex items-center gap-1">
-            <Mail className="w-3.5 h-3.5 text-slate-500" />
-            {user?.email || tDash('loadingUser')}
-          </span>
-          <span className="text-slate-600">•</span>
-          <span className="flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            {cityDisplay}
-          </span>
+        <div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              {roleLabel}
+            </span>
+            <h1 className="text-xl sm:text-2xl font-black text-white">
+              {companyName}
+            </h1>
+            {!isAdmin && (
+              <TrustBadge status={profile?.verification_status || 'unverified'} variant="icon" />
+            )}
+          </div>
+          <div className="flex items-center gap-3 text-xs text-slate-400 mt-1">
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-slate-500" />
+              {getCityLabel(city, locale)}
+            </span>
+            <span className="flex items-center gap-1">
+              <Mail className="w-3.5 h-3.5 text-slate-500" />
+              {user?.email || 'authenticated'}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 self-start sm:self-center">
         <button
           onClick={onRestartTour}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-amber-400 border border-slate-700 transition-colors cursor-pointer"
+          className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
         >
-          <HelpCircle className="w-4 h-4" />
-          <span>{tDash('restartTour')}</span>
+          <Compass className="w-3.5 h-3.5 text-amber-400" />
+          <span>{t('restartTour')}</span>
         </button>
+
         <button
           onClick={onSignOut}
-          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors cursor-pointer"
+          className="px-3.5 py-2 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-xs font-semibold text-red-400 transition-all flex items-center gap-1.5 cursor-pointer"
         >
-          {t('logout')}
+          <LogOut className="w-3.5 h-3.5" />
+          <span>تسجيل الخروج</span>
         </button>
       </div>
     </div>

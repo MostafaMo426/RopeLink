@@ -70,7 +70,10 @@ export default function MarketplaceCard({
 
         {/* Title & Specialty */}
         <div>
-          <h3 className="font-bold text-white text-base mb-1">{req.company_name}</h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-bold text-white text-base">{req.company_name}</h3>
+            <TrustBadge status={req.profiles?.verification_status || 'unverified'} variant="icon" />
+          </div>
           <p className="text-xs text-amber-400 font-semibold">{getSpecialtyLabel(req.specialty, locale)}</p>
         </div>
 

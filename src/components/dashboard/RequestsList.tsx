@@ -5,6 +5,7 @@ import { ManpowerRequest } from '@/types/database';
 import { MapPin, Users, Calendar } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { getCityLabel, getStatusLabel, getSpecialtyLabel } from '@/lib/constants';
+import TrustBadge from '@/components/verification/TrustBadge';
 
 interface RequestsListProps {
   requests: ManpowerRequest[];
@@ -50,9 +51,12 @@ export default function RequestsList({ requests, loading }: RequestsListProps) {
                   </span>
                 </div>
 
-                <h4 className="font-bold text-white text-sm sm:text-base">
-                  {req.company_name}
-                </h4>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-white text-sm sm:text-base">
+                    {req.company_name}
+                  </h4>
+                  <TrustBadge status={req.profiles?.verification_status || 'unverified'} variant="icon" />
+                </div>
 
                 {req.notes && (
                   <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">

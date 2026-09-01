@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node scripts/verify-phase2.mjs"
+    "test": "node scripts/verify-phase2.mjs && node scripts/verify-phase3.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

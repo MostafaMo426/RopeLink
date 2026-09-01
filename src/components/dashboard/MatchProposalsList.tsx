@@ -12,6 +12,8 @@ interface MatchProposalsListProps {
   currentUserId?: string;
   onUpdateStatus: (matchId: string, status: MatchStatus) => Promise<boolean>;
   onRefresh?: () => Promise<void> | void;
+  onOpenChat?: (proposal: MatchProposal) => void;
+  onOpenDraftAgreement?: (proposal: MatchProposal) => void;
 }
 
 export default function MatchProposalsList({
@@ -19,6 +21,8 @@ export default function MatchProposalsList({
   currentUserId,
   onUpdateStatus,
   onRefresh,
+  onOpenChat,
+  onOpenDraftAgreement,
 }: MatchProposalsListProps) {
   const t = useTranslations('marketplace');
   const [activeTab, setActiveTab] = useState<'incoming' | 'outgoing'>('incoming');
@@ -110,6 +114,8 @@ export default function MatchProposalsList({
               isIncoming={activeTab === 'incoming'}
               isUpdating={updatingId === m.id}
               onAction={handleAction}
+              onOpenChat={onOpenChat}
+              onOpenDraftAgreement={onOpenDraftAgreement}
             />
           ))}
         </div>

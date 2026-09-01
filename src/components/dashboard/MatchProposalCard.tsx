@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { MatchProposal, MatchStatus } from '@/types/database';
-import { Handshake, Check, X, MessageSquare, MapPin } from 'lucide-react';
+import { Handshake, Check, X, MessageSquare, MapPin, FileText } from 'lucide-react';
 import { getCityLabel, getSpecialtyLabel } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
 import TrustBadge from '@/components/verification/TrustBadge';
@@ -12,6 +12,8 @@ interface MatchProposalCardProps {
   isIncoming: boolean;
   isUpdating: boolean;
   onAction: (id: string, status: MatchStatus) => void;
+  onOpenChat?: (proposal: MatchProposal) => void;
+  onOpenDraftAgreement?: (proposal: MatchProposal) => void;
 }
 
 export default function MatchProposalCard({
@@ -19,6 +21,8 @@ export default function MatchProposalCard({
   isIncoming,
   isUpdating,
   onAction,
+  onOpenChat,
+  onOpenDraftAgreement,
 }: MatchProposalCardProps) {
   const t = useTranslations('marketplace');
   const tDash = useTranslations('dashboard');
@@ -81,26 +85,51 @@ export default function MatchProposalCard({
         )}
       </div>
 
-      {isIncoming && isPending && (
-        <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80">
-          <button
-            disabled={isUpdating}
-            onClick={() => onAction(m.id, 'accepted')}
-            className="flex-1 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-          >
-            <Check className="w-3.5 h-3.5" />
-            <span>{t('acceptMatchBtn')}</span>
-          </button>
-          <button
-            disabled={isUpdating}
-            onClick={() => onAction(m.id, 'declined')}
-            className="py-2 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
-          >
-            <X className="w-3.5 h-3.5" />
-            <span>{t('declineMatchBtn')}</span>
-          </button>
-        </div>
-      )}
+      {/* Actions */}
+      <div className="pt-2 border-t border-slate-800/80 space-y-2">
+        {isIncoming && isPending ? (
+          <div className="flex items-center gap-2">
+            <button
+              disabled={isUpdating}
+              onClick={() => onAction(m.id, 'accepted')}
+              className="flex-1 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>{t('acceptMatchBtn')}</span>
+            </button>
+            <button
+              disabled={isUpdating}
+              onClick={() => onAction(m.id, 'declined')}
+              className="py-2 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>{t('declineMatchBtn')}</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            {onOpenChat && (
+              <button
+                onClick={() => onOpenChat(m)}
+                className="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>{t('openChatBtn')}</span>
+              </button>
+            )}
+
+            {m.status === 'accepted' && onOpenDraftAgreement && (
+              <button
+                onClick={() => onOpenDraftAgreement(m)}
+                className="flex-1 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>{t('createAgreementBtn')}</span>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

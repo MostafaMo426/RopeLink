@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -12,17 +11,20 @@ import RequestsList from '@/components/dashboard/RequestsList';
 import AdminOperationsView from '@/components/dashboard/AdminOperationsView';
 import MarketplaceFeed from '@/components/marketplace/MarketplaceFeed';
 import MatchProposalsList from '@/components/dashboard/MatchProposalsList';
+import AgreementsFeed from '@/components/agreements/AgreementsFeed';
+import AgreementModal from '@/components/agreements/AgreementModal';
+import ChatModal from '@/components/chat/ChatModal';
 import QuickActionButtons from '@/components/dashboard/QuickActionButtons';
+import DashboardTabs from '@/components/dashboard/DashboardTabs';
 import VerificationBanner from '@/components/verification/VerificationBanner';
 import VerificationModal from '@/components/verification/VerificationModal';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useRequests } from '@/hooks/useRequests';
 import { useRealtimeMarketplace } from '@/hooks/useRealtimeMarketplace';
-import { RequestType } from '@/types/database';
-import { Globe, ListFilter, Handshake } from 'lucide-react';
+import { useAgreements } from '@/hooks/useAgreements';
+import { RequestType, MatchProposal } from '@/types/database';
 
 export default function DashboardPage() {
-  const tDash = useTranslations('dashboard');
   const router = useRouter();
 
   const { user, profile, signOut, refreshProfile } = useSupabaseAuth();
@@ -38,10 +40,20 @@ export default function DashboardPage() {
     sendMatchProposal,
     updateMatchStatus,
   } = useRealtimeMarketplace(user?.id);
+  const {
+    agreements,
+    loading: agrLoading,
+    refreshAgreements,
+    createAgreement,
+    signAgreement,
+    advanceMilestone,
+  } = useAgreements(user?.id);
 
-  const [activeTab, setActiveTab] = useState<'marketplace' | 'my_requests' | 'proposals'>('marketplace');
+  const [activeTab, setActiveTab] = useState<'marketplace' | 'my_requests' | 'proposals' | 'agreements'>('marketplace');
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [verificationModalOpen, setVerificationModalOpen] = useState(false);
+  const [activeChatMatch, setActiveChatMatch] = useState<MatchProposal | null>(null);
+  const [activeDraftMatch, setActiveDraftMatch] = useState<MatchProposal | null>(null);
   const [selectedType, setSelectedType] = useState<RequestType>('project');
   const [restartCounter, setRestartCounter] = useState(0);
 
@@ -51,22 +63,9 @@ export default function DashboardPage() {
     (m) => m.recipient_id === user?.id && m.status === 'pending'
   ).length;
 
-  const handleOpenRequest = (type: RequestType) => {
-    setSelectedType(type);
-    setRequestModalOpen(true);
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-[#07090E]">
-      {user && profile && (
-        <GuidedTour user={user} profile={profile} restartCounter={restartCounter} />
-      )}
-
+      {user && profile && <GuidedTour user={user} profile={profile} restartCounter={restartCounter} />}
       <Navbar user={user} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
@@ -74,7 +73,7 @@ export default function DashboardPage() {
           user={user}
           profile={profile}
           onRestartTour={() => setRestartCounter((c) => c + 1)}
-          onSignOut={handleSignOut}
+          onSignOut={async () => { await signOut(); router.push('/'); }}
         />
 
         {showVerificationBanner && (
@@ -93,51 +92,15 @@ export default function DashboardPage() {
           />
         ) : (
           <div className="space-y-8">
-            <QuickActionButtons onOpenRequest={handleOpenRequest} />
+            <QuickActionButtons onOpenRequest={(t) => { setSelectedType(t); setRequestModalOpen(true); }} />
 
-            {/* Dashboard Tabs */}
-            <div className="flex flex-wrap items-center gap-3 border-b border-slate-800 pb-2">
-              <button
-                onClick={() => setActiveTab('marketplace')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                  activeTab === 'marketplace'
-                    ? 'bg-amber-500 text-slate-950 shadow-amber-glow'
-                    : 'text-slate-400 hover:text-white bg-slate-900 border border-slate-800'
-                }`}
-              >
-                <Globe className="w-4 h-4" />
-                <span>{tDash('tabMarketplace')}</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('my_requests')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                  activeTab === 'my_requests'
-                    ? 'bg-amber-500 text-slate-950 shadow-amber-glow'
-                    : 'text-slate-400 hover:text-white bg-slate-900 border border-slate-800'
-                }`}
-              >
-                <ListFilter className="w-4 h-4" />
-                <span>{tDash('tabMyRequests')} ({myRequests.length})</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('proposals')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                  activeTab === 'proposals'
-                    ? 'bg-amber-500 text-slate-950 shadow-amber-glow'
-                    : 'text-slate-400 hover:text-white bg-slate-900 border border-slate-800'
-                }`}
-              >
-                <Handshake className="w-4 h-4" />
-                <span>{tDash('tabProposals')}</span>
-                {incomingPendingCount > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-black animate-pulse">
-                    {incomingPendingCount}
-                  </span>
-                )}
-              </button>
-            </div>
+            <DashboardTabs
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              myRequestsCount={myRequests.length}
+              agreementsCount={agreements.length}
+              incomingPendingCount={incomingPendingCount}
+            />
 
             {activeTab === 'marketplace' ? (
               <MarketplaceFeed
@@ -149,17 +112,24 @@ export default function DashboardPage() {
                 onRefresh={refreshMarketplace}
               />
             ) : activeTab === 'my_requests' ? (
-              <RequestsList
-                requests={myRequests}
-                loading={reqLoading}
-                onRefresh={refreshRequests}
-              />
-            ) : (
+              <RequestsList requests={myRequests} loading={reqLoading} onRefresh={refreshRequests} />
+            ) : activeTab === 'proposals' ? (
               <MatchProposalsList
                 matches={matches}
                 currentUserId={user?.id}
                 onUpdateStatus={updateMatchStatus}
                 onRefresh={refreshMarketplace}
+                onOpenChat={(m) => setActiveChatMatch(m)}
+                onOpenDraftAgreement={(m) => setActiveDraftMatch(m)}
+              />
+            ) : (
+              <AgreementsFeed
+                agreements={agreements}
+                loading={agrLoading}
+                currentUserId={user?.id}
+                onSignAgreement={signAgreement}
+                onAdvanceMilestone={advanceMilestone}
+                onRefresh={refreshAgreements}
               />
             )}
           </div>
@@ -182,6 +152,22 @@ export default function DashboardPage() {
         onClose={() => setVerificationModalOpen(false)}
         profile={profile}
         onSubmitted={refreshProfile}
+      />
+
+      <ChatModal
+        isOpen={Boolean(activeChatMatch)}
+        onClose={() => setActiveChatMatch(null)}
+        match={activeChatMatch}
+        currentUserId={user?.id}
+        onOpenDraftAgreement={(m) => setActiveDraftMatch(m)}
+      />
+
+      <AgreementModal
+        isOpen={Boolean(activeDraftMatch)}
+        onClose={() => setActiveDraftMatch(null)}
+        match={activeDraftMatch}
+        currentUserId={user?.id}
+        onCreate={createAgreement}
       />
     </div>
   );

@@ -1,9 +1,10 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Building2, Mail, ShieldCheck, HelpCircle } from 'lucide-react';
 import { Profile } from '@/types/database';
 import { User } from '@supabase/supabase-js';
+import { getCityLabel } from '@/lib/constants';
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -18,8 +19,13 @@ export default function DashboardHeader({
   onRestartTour,
   onSignOut,
 }: DashboardHeaderProps) {
+  const locale = useLocale();
   const t = useTranslations('nav');
   const tDash = useTranslations('dashboard');
+
+  const cityDisplay = profile?.city
+    ? getCityLabel(profile.city, locale)
+    : tDash('defaultLocation');
 
   return (
     <div
@@ -46,7 +52,7 @@ export default function DashboardHeader({
           <span className="text-slate-600">•</span>
           <span className="flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            {profile?.city || tDash('defaultLocation')}
+            {cityDisplay}
           </span>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { SaudiCity, RequestType } from '@/types/database';
+import { SaudiCity, RequestType, RequestStatus } from '@/types/database';
 
 export const SAUDI_CITIES: { value: SaudiCity; labelAr: string; labelEn: string }[] = [
   { value: 'Riyadh', labelAr: 'الرياض', labelEn: 'Riyadh' },
@@ -23,6 +23,24 @@ export const SPECIALTIES = [
   { id: 'facade_maintenance', ar: 'صيانة وتنظيف واجهات الأبراج', en: 'Tower Facade Cleaning & Glazing' },
   { id: 'blade_repair', ar: 'صيانة توربينات وطاقة متجددة', en: 'Wind Turbine & Energy Maintenance' },
 ];
+
+export const STATUS_META: Record<RequestStatus, { ar: string; en: string }> = {
+  pending: { ar: 'قيد المراجعة', en: 'Pending Review' },
+  reviewing: { ar: 'قيد التدقيق الفني', en: 'Technical Review' },
+  matched: { ar: 'تمت المطابقة', en: 'Matched' },
+  in_progress: { ar: 'قيد التنفيذ الميداني', en: 'In Progress' },
+  completed: { ar: 'مكتمل', en: 'Completed' },
+  cancelled: { ar: 'ملغي', en: 'Cancelled' },
+};
+
+export function getCityLabel(city: string, locale: string): string {
+  const found = SAUDI_CITIES.find((c) => c.value === city || c.labelEn === city || c.labelAr === city);
+  return found ? (locale === 'ar' ? found.labelAr : found.labelEn) : city;
+}
+
+export function getStatusLabel(status: RequestStatus, locale: string): string {
+  return STATUS_META[status]?.[locale === 'ar' ? 'ar' : 'en'] || status;
+}
 
 export const REQUEST_TYPE_META: Record<
   RequestType,

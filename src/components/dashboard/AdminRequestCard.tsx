@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ManpowerRequest, RequestStatus } from '@/types/database';
 import { MapPin, Users, Calendar, Phone } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { getCityLabel, getStatusLabel } from '@/lib/constants';
 
 interface AdminRequestCardProps {
   request: ManpowerRequest;
@@ -19,6 +20,7 @@ export default function AdminRequestCard({
   onStatusChange,
 }: AdminRequestCardProps) {
   const t = useTranslations('admin');
+  const tDash = useTranslations('dashboard');
   const locale = useLocale();
 
   return (
@@ -28,17 +30,17 @@ export default function AdminRequestCard({
           <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
             {req.specialty}
           </span>
-          <div className="flex items-center gap-1 text-xs">
+          <div className="flex items-center gap-1.5 text-xs">
             <span className="text-slate-400">{t('statusUpdate')}:</span>
             <select
               value={req.status}
               disabled={isUpdating}
               onChange={(e) => onStatusChange(req.id, e.target.value as RequestStatus)}
-              className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-500 cursor-pointer"
+              className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-500 cursor-pointer"
             >
               {statusOptions.map((opt) => (
                 <option key={opt} value={opt} className="bg-slate-900 text-white">
-                  {opt}
+                  {getStatusLabel(opt, locale)}
                 </option>
               ))}
             </select>
@@ -52,7 +54,7 @@ export default function AdminRequestCard({
       <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
         <span className="flex items-center gap-1">
           <MapPin className="w-3.5 h-3.5 text-slate-500" />
-          {req.city}
+          {getCityLabel(req.city, locale)}
         </span>
         {req.contact_phone && (
           <span className="flex items-center gap-1">
@@ -62,7 +64,7 @@ export default function AdminRequestCard({
         )}
         <span className="flex items-center gap-1">
           <Users className="w-3.5 h-3.5 text-cyan-400" />
-          {req.technician_count} Techs
+          {req.technician_count} {tDash('techsCount')}
         </span>
         <span className="flex items-center gap-1">
           <Calendar className="w-3.5 h-3.5 text-amber-500" />

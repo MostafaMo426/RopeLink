@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ManpowerRequest } from '@/types/database';
 import { MapPin, Users, Calendar } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { getCityLabel, getStatusLabel } from '@/lib/constants';
 
 interface RequestsListProps {
   requests: ManpowerRequest[];
@@ -44,8 +45,8 @@ export default function RequestsList({ requests, loading }: RequestsListProps) {
                   <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
                     {req.specialty}
                   </span>
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                    {req.status}
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    {getStatusLabel(req.status, locale)}
                   </span>
                 </div>
 
@@ -63,7 +64,7 @@ export default function RequestsList({ requests, loading }: RequestsListProps) {
               <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                  {req.city}
+                  {getCityLabel(req.city, locale)}
                 </span>
                 <span className="flex items-center gap-1">
                   <Users className="w-3.5 h-3.5 text-cyan-400" />

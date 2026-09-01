@@ -113,6 +113,7 @@
     "proposalMessageLabel": "Proposal Details & Proposed Scope",
     "proposalMessagePlaceholder": "Enter mobilization timeline, day rate details, or scope notes...",
     "sendProposalConfirmBtn": "Send Match Proposal",
+    "submitting": "Submitting...",
     "proposalSuccessToast": "Proposal sent successfully! The recipient has been notified.",
     "proposalErrorToast": "Failed to send proposal. Please try again."
   },

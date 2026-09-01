@@ -113,6 +113,7 @@
     "proposalMessageLabel": "تفاصيل العرض ونطاق العمل المقترح",
     "proposalMessagePlaceholder": "أدخل تفاصيل التنسيق الميداني أو استفسارك بخصوص الكادر أو المشروع...",
     "sendProposalConfirmBtn": "تأكيد وإرسال العرض",
+    "submitting": "جاري الإرسال...",
     "proposalSuccessToast": "تم إرسال عرض الإسناد بنجاح! سيتم إشعار الطرف الآخر.",
     "proposalErrorToast": "فشل إرسال العرض، يرجى المحاولة لاحقاً."
   },

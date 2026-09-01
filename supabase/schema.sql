@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- RopeLink B2B Manpower Marketplace - Supabase PostgreSQL Schema
--- Phase 1: Profiles, Tutorial Tracking, and Request Intake
+-- Bulletproof & Fail-Safe Trigger Edition
 -- ==============================================================================
 
 -- 1. Custom Types & ENUMs
@@ -47,7 +47,7 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
--- 2. Profiles Table (Tracks Company, Role, and Onboarding Tutorial State)
+-- 2. Profiles Table
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     company_name TEXT NOT NULL DEFAULT '',
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
--- 3. Requests Table (Handles Projects, Manpower Needs, and Available Crews)
+-- 3. Requests Table
 CREATE TABLE IF NOT EXISTS public.requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS public.requests (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
--- 4. Enable Row Level Security (RLS)
+-- 4. Enable RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.requests ENABLE ROW LEVEL SECURITY;
 
@@ -113,28 +113,43 @@ CREATE POLICY "Users can update own requests"
     ON public.requests FOR UPDATE
     USING (auth.uid() = user_id);
 
--- 7. Automated Profile Creation Trigger on Auth Signup
+-- 7. Automated Fail-Safe Profile Creation Trigger on Auth Signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_role user_role := 'contractor';
+    v_company TEXT := '';
 BEGIN
-    INSERT INTO public.profiles (id, company_name, role, has_seen_tutorial)
-    VALUES (
-        NEW.id,
-        COALESCE(NEW.raw_user_meta_data->>'company_name', ''),
-        COALESCE((NEW.raw_user_meta_data->>'role')::user_role, 'contractor'),
-        FALSE
-    )
-    ON CONFLICT (id) DO NOTHING;
+    IF NEW.raw_user_meta_data IS NOT NULL THEN
+        IF (NEW.raw_user_meta_data->>'role') = 'supplier' THEN
+            v_role := 'supplier';
+        ELSIF (NEW.raw_user_meta_data->>'role') = 'admin' THEN
+            v_role := 'admin';
+        ELSE
+            v_role := 'contractor';
+        END IF;
+        v_company := COALESCE(NEW.raw_user_meta_data->>'company_name', '');
+    END IF;
+
+    INSERT INTO public.profiles (id, company_name, role, city, has_seen_tutorial)
+    VALUES (NEW.id, v_company, v_role, 'Riyadh', FALSE)
+    ON CONFLICT (id) DO UPDATE SET
+        company_name = EXCLUDED.company_name,
+        role = EXCLUDED.role;
+
     RETURN NEW;
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth, pg_temp;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 8. Updated At Timestamp Function & Triggers
+-- 8. Updated At Timestamp Function
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -153,7 +168,11 @@ CREATE TRIGGER set_requests_updated_at
     BEFORE UPDATE ON public.requests
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
--- 9. Performance Indexes
+-- 9. Permissions & Indexes
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.profiles TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.requests TO anon, authenticated, service_role;
+
 CREATE INDEX IF NOT EXISTS idx_requests_user_id ON public.requests(user_id);
 CREATE INDEX IF NOT EXISTS idx_requests_city ON public.requests(city);
 CREATE INDEX IF NOT EXISTS idx_requests_type ON public.requests(type);

@@ -45,7 +45,7 @@ export default function DashboardPage() {
   const [restartCounter, setRestartCounter] = useState(0);
 
   const isAdmin = profile?.role === 'admin';
-  const showVerificationBanner = !isAdmin && profile?.verification_status === 'unverified';
+  const showVerificationBanner = !isAdmin && profile?.verification_status !== 'verified';
   const incomingPendingCount = matches.filter(
     (m) => m.recipient_id === user?.id && m.status === 'pending'
   ).length;
@@ -77,7 +77,10 @@ export default function DashboardPage() {
         />
 
         {showVerificationBanner && (
-          <VerificationBanner onOpenVerification={() => setVerificationModalOpen(true)} />
+          <VerificationBanner
+            status={profile?.verification_status}
+            onOpenVerification={() => setVerificationModalOpen(true)}
+          />
         )}
 
         {isAdmin ? (

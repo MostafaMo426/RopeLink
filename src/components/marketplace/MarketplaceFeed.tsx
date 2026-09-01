@@ -6,7 +6,8 @@ import { ManpowerRequest, Profile } from '@/types/database';
 import MarketplaceFilters from './MarketplaceFilters';
 import MarketplaceCard from './MarketplaceCard';
 import MatchProposalModal from './MatchProposalModal';
-import { Globe } from 'lucide-react';
+import { Globe, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface MarketplaceFeedProps {
   requests: ManpowerRequest[];
@@ -14,6 +15,7 @@ interface MarketplaceFeedProps {
   currentUserProfile?: Profile | null;
   userRequests?: ManpowerRequest[];
   onSendProposal: (requestId: string, recipientId: string, message: string) => Promise<boolean>;
+  onRefresh?: () => Promise<void> | void;
 }
 
 export default function MarketplaceFeed({
@@ -22,14 +24,26 @@ export default function MarketplaceFeed({
   currentUserProfile,
   userRequests = [],
   onSendProposal,
+  onRefresh,
 }: MarketplaceFeedProps) {
   const t = useTranslations('marketplace');
   const [typeFilter, setTypeFilter] = useState<'all' | 'projects' | 'crews'>('all');
   const [cityFilter, setCityFilter] = useState('all');
   const [specialtyFilter, setSpecialtyFilter] = useState('all');
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [selectedProposalReq, setSelectedProposalReq] = useState<ManpowerRequest | null>(null);
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    setRefreshing(true);
+    await onRefresh();
+    setTimeout(() => {
+      setRefreshing(false);
+      toast.success(t('refreshedToast'));
+    }, 400);
+  };
 
   // Filter requests
   const filtered = requests.filter((req) => {
@@ -50,9 +64,19 @@ export default function MarketplaceFeed({
             {t('marketplaceSectionTitle')}
           </h2>
         </div>
-        <span className="text-xs text-slate-400">
-          {t('activeOpportunities')}: {filtered.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800 hover:border-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-amber-400' : ''}`} />
+            <span>{t('refreshBtn')}</span>
+          </button>
+          <span className="text-xs text-slate-400">
+            {t('activeOpportunities')}: {filtered.length}
+          </span>
+        </div>
       </div>
 
       <MarketplaceFilters

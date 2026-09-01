@@ -93,7 +93,9 @@
     "allCompanies": "All Registered Companies",
     "statusUpdate": "Update Status",
     "statusUpdatedToast": "Request status successfully updated in database",
-    "statusUpdateError": "Failed to update status"
+    "statusUpdateError": "Failed to update status",
+    "refreshBtn": "Refresh Data",
+    "refreshedToast": "Operations data refreshed successfully"
   },
   "marketplace": {
     "marketplaceSectionTitle": "Saudi B2B Industrial Marketplace",
@@ -130,7 +132,10 @@
     "declineMatchBtn": "Decline",
     "acceptSuccessToast": "Match proposal accepted successfully",
     "declineSuccessToast": "Match proposal declined",
-    "actionErrorToast": "Error updating proposal status"
+    "actionErrorToast": "Error updating proposal status",
+    "refreshBtn": "Refresh Data",
+    "refreshedToast": "Marketplace data refreshed successfully",
+    "proposalsRefreshedToast": "Proposals refreshed successfully"
   },
   "matching": {
     "compatibility": "Match Compatibility",

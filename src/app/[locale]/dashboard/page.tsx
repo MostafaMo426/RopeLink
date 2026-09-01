@@ -34,6 +34,7 @@ export default function DashboardPage() {
     requests: marketRequests,
     matches,
     loading: marketLoading,
+    refreshMarketplace,
     sendMatchProposal,
     updateMatchStatus,
   } = useRealtimeMarketplace(user?.id);
@@ -88,6 +89,7 @@ export default function DashboardPage() {
             requests={myRequests}
             loading={reqLoading}
             onUpdateStatus={updateRequestStatus}
+            onRefresh={refreshRequests}
           />
         ) : (
           <div className="space-y-8">
@@ -144,6 +146,7 @@ export default function DashboardPage() {
                 currentUserProfile={profile}
                 userRequests={myRequests}
                 onSendProposal={sendMatchProposal}
+                onRefresh={refreshMarketplace}
               />
             ) : activeTab === 'my_requests' ? (
               <RequestsList requests={myRequests} loading={reqLoading} />
@@ -152,6 +155,7 @@ export default function DashboardPage() {
                 matches={matches}
                 currentUserId={user?.id}
                 onUpdateStatus={updateMatchStatus}
+                onRefresh={refreshMarketplace}
               />
             )}
           </div>

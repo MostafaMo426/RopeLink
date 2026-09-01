@@ -93,7 +93,9 @@
     "allCompanies": "كافة المنشآت المسجلة",
     "statusUpdate": "تحديث الحالة",
     "statusUpdatedToast": "تم تحديث حالة الطلب بنجاح في قاعدة البيانات",
-    "statusUpdateError": "فشل تحديث الحالة"
+    "statusUpdateError": "فشل تحديث الحالة",
+    "refreshBtn": "تحديث البيانات",
+    "refreshedToast": "تم تحديث بيانات مركز العمليات بنجاح"
   },
   "marketplace": {
     "marketplaceSectionTitle": "سوق المقاولات والفرص المتاحة بالمملكة",
@@ -130,7 +132,10 @@
     "declineMatchBtn": "اعتذار",
     "acceptSuccessToast": "تم قبول عرض الإسناد بنجاح",
     "declineSuccessToast": "تم الاعتذار عن العرض",
-    "actionErrorToast": "حدث خطأ أثناء تحديث حالة العرض"
+    "actionErrorToast": "حدث خطأ أثناء تحديث حالة العرض",
+    "refreshBtn": "تحديث البيانات",
+    "refreshedToast": "تم تحديث بيانات السوق بنجاح",
+    "proposalsRefreshedToast": "تم تحديث عروض الإسناد بنجاح"
   },
   "matching": {
     "compatibility": "نسبة التطابق الميداني",

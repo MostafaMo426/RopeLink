@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { ManpowerRequest, RequestStatus } from '@/types/database';
-import { ShieldCheck, Building } from 'lucide-react';
+import { ShieldCheck, Building, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import AdminRequestCard from './AdminRequestCard';
 import AdminVerificationQueue from './AdminVerificationQueue';
@@ -12,6 +12,7 @@ interface AdminOperationsViewProps {
   requests: ManpowerRequest[];
   loading?: boolean;
   onUpdateStatus: (id: string, status: RequestStatus) => Promise<boolean>;
+  onRefresh?: () => Promise<void> | void;
 }
 
 const STATUS_OPTIONS: RequestStatus[] = [
@@ -27,11 +28,13 @@ export default function AdminOperationsView({
   requests,
   loading,
   onUpdateStatus,
+  onRefresh,
 }: AdminOperationsViewProps) {
   const t = useTranslations('admin');
   const [filter, setFilter] = useState<string>('all');
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const uniqueCompanies = useMemo(() => {
     const names = requests.map((r) => r.company_name).filter(Boolean);
@@ -43,6 +46,16 @@ export default function AdminOperationsView({
     const matchCompany = selectedCompany === 'all' ? true : r.company_name === selectedCompany;
     return matchStatus && matchCompany;
   });
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    setRefreshing(true);
+    await onRefresh();
+    setTimeout(() => {
+      setRefreshing(false);
+      toast.success(t('refreshedToast'));
+    }, 400);
+  };
 
   const handleStatusChange = async (id: string, newStatus: RequestStatus) => {
     setUpdatingId(id);
@@ -74,7 +87,15 @@ export default function AdminOperationsView({
             <p className="text-xs sm:text-sm text-slate-400">{t('consoleSubtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold">
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-amber-400' : ''}`} />
+              <span>{t('refreshBtn')}</span>
+            </button>
+            <span className="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold">
               {filtered.length} / {requests.length} {t('filterAll')}
             </span>
           </div>

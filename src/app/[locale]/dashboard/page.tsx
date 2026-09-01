@@ -2,34 +2,23 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/routing';
+import { useRouter } from '@/i18n/routing';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import GuidedTour from '@/components/dashboard/GuidedTour';
 import RequestModal from '@/components/requests/RequestModal';
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import RequestsList from '@/components/dashboard/RequestsList';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useRequests } from '@/hooks/useRequests';
 import { RequestType } from '@/types/database';
-import {
-  Briefcase,
-  Users,
-  UserCheck,
-  Building2,
-  Calendar,
-  MapPin,
-  Clock,
-  Sparkles,
-  HelpCircle,
-} from 'lucide-react';
-import { formatDate } from '@/lib/utils';
-import { useLocale } from 'next-intl';
+import { Briefcase, Users, UserCheck } from 'lucide-react';
 
 export default function DashboardPage() {
-  const t = useTranslations('nav');
   const tHero = useTranslations('hero');
-  const locale = useLocale();
+  const router = useRouter();
   const { user, profile, signOut } = useSupabaseAuth();
-  const { requests, loading, refreshRequests } = useRequests(user?.id);
+  const { requests, loading: reqLoading, refreshRequests } = useRequests(user?.id);
 
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<RequestType>('project');
@@ -40,51 +29,30 @@ export default function DashboardPage() {
     setRequestModalOpen(true);
   };
 
-  const hasSeen = profile?.has_seen_tutorial ?? false;
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/');
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#07090E]">
-      {/* Interactive Guided Tour on First Login */}
-      <GuidedTour
-        key={tourKey}
-        user={user}
-        hasSeenTutorial={hasSeen}
-        onTourComplete={() => {}}
-      />
+      {user && (
+        <GuidedTour
+          key={tourKey}
+          user={user}
+          hasSeenTutorial={profile?.has_seen_tutorial ?? false}
+        />
+      )}
 
-      <Navbar user={user || { name: 'Demo Contractor' }} />
+      <Navbar user={user} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
-        {/* Header with Enterprise Info & Tour trigger */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Building2 className="w-5 h-5 text-amber-500" />
-              <h1 className="text-xl sm:text-2xl font-black text-white">
-                {profile?.company_name || 'شركة المقاولات النموذجية'}
-              </h1>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-400">
-              لوحة التحكم والإسناد الفني الميداني | {profile?.city || 'الجبيل'}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setTourKey((k) => k + 1)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-amber-400 border border-slate-700 transition-colors cursor-pointer"
-            >
-              <HelpCircle className="w-4 h-4" />
-              <span>إعادة الجولة التعريفية</span>
-            </button>
-            <button
-              onClick={signOut}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors cursor-pointer"
-            >
-              {t('logout')}
-            </button>
-          </div>
-        </div>
+        <DashboardHeader
+          user={user}
+          profile={profile}
+          onRestartTour={() => setTourKey((k) => k + 1)}
+          onSignOut={handleSignOut}
+        />
 
         {/* 3 Quick Action CTAs */}
         <div id="tour-ctas" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -116,63 +84,11 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Requests Activity List */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white">الطلبات والإسنادات النشطة</h2>
-            <span className="text-xs text-slate-400">إجمالي: {requests.length}</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {requests.map((req) => (
-              <div
-                key={req.id}
-                className="glass-panel p-5 rounded-2xl border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                      {req.specialty}
-                    </span>
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                      {req.status}
-                    </span>
-                  </div>
-
-                  <h4 className="font-bold text-white text-sm sm:text-base">
-                    {req.company_name}
-                  </h4>
-
-                  {req.notes && (
-                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                      {req.notes}
-                    </p>
-                  )}
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                    {req.city}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-cyan-400" />
-                    {req.technician_count} فنيين
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-amber-500" />
-                    {formatDate(req.start_date, locale)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <RequestsList requests={requests} loading={reqLoading} />
       </main>
 
       <Footer />
 
-      {/* Request Modal / Bottom-Sheet */}
       <RequestModal
         isOpen={requestModalOpen}
         onClose={() => setRequestModalOpen(false)}

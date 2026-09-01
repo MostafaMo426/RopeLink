@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { Shield, Menu, X, Anchor, ArrowRight, User } from 'lucide-react';
+import { Anchor, Menu, X, User } from 'lucide-react';
 import LocaleSwitcher from '@/components/common/LocaleSwitcher';
 
 interface NavbarProps {
@@ -82,7 +82,7 @@ export default function Navbar({ onOpenAuth, user }: NavbarProps) {
           {/* Mobile menu trigger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80"
+            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 cursor-pointer"
             aria-label="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -114,7 +114,15 @@ export default function Navbar({ onOpenAuth, user }: NavbarProps) {
           >
             {t('howItWorks')}
           </a>
-          {!user && (
+          {user ? (
+            <Link
+              href="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full py-2.5 rounded-lg text-xs font-bold text-center bg-amber-500 text-black shadow-amber-glow"
+            >
+              {t('dashboard')}
+            </Link>
+          ) : (
             <div className="pt-2 flex flex-col gap-2">
               <button
                 onClick={() => {

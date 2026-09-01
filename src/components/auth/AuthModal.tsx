@@ -37,39 +37,28 @@ export default function AuthModal({
     setLoading(true);
 
     try {
-      if (isSupabaseConfigured()) {
-        if (mode === 'signup') {
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                company_name: companyName,
-                role: role,
-              },
+      if (mode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password: password,
+          options: {
+            data: {
+              company_name: companyName.trim(),
+              role: role,
             },
-          });
-          if (error) throw error;
-          toast.success(t('authSuccess'));
-          onSuccess?.(data.user);
-        } else {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          if (error) throw error;
-          toast.success(t('authSuccess'));
-          onSuccess?.(data.user);
-        }
-      } else {
-        const mockUser = {
-          id: 'demo-user-saudi-01',
-          email,
-          user_metadata: { company_name: companyName || 'شركة المقاولات السعودية', role },
-        };
-        sessionStorage.setItem('ropelink_user', JSON.stringify(mockUser));
+          },
+        });
+        if (error) throw error;
         toast.success(t('authSuccess'));
-        onSuccess?.(mockUser);
+        onSuccess?.(data.user);
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password,
+        });
+        if (error) throw error;
+        toast.success(t('authSuccess'));
+        onSuccess?.(data.user);
       }
       onClose();
     } catch (err: any) {

@@ -50,8 +50,9 @@ export default async function LocaleLayout({
   const isRtl = locale === 'ar';
 
   return (
-    <html lang={locale} dir={isRtl ? 'rtl' : 'ltr'} className="dark">
+    <html lang={locale} dir={isRtl ? 'rtl' : 'ltr'} className="dark" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${ibmPlexArabic.variable} ${inter.variable} ${
           isRtl ? 'font-arabic' : 'font-sans'
         } bg-[#07090E] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-black`}

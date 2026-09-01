@@ -3,64 +3,46 @@
 import { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 import { Profile } from '@/types/database';
+import { User } from '@supabase/supabase-js';
 
 export function useSupabaseAuth() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
 
-    const fetchSession = async () => {
+    const initializeAuth = async () => {
       setLoading(true);
       try {
         if (isSupabaseConfigured()) {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user && isMounted) {
-            setUser(session.user);
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          if (currentUser && isMounted) {
+            setUser(currentUser);
             const { data: prof } = await supabase
               .from('profiles')
               .select('*')
-              .eq('id', session.user.id)
+              .eq('id', currentUser.id)
               .maybeSingle();
             if (prof && isMounted) setProfile(prof);
-          }
-        } else {
-          const stored = typeof window !== 'undefined' ? sessionStorage.getItem('ropelink_user') : null;
-          if (stored && stored.trim()) {
-            try {
-              const parsed = JSON.parse(stored);
-              if (parsed && isMounted) {
-                setUser(parsed);
-                setProfile({
-                  id: parsed.id || 'demo-user-saudi-01',
-                  company_name: parsed.user_metadata?.company_name || 'شركة المقاولات النموذجية',
-                  role: parsed.user_metadata?.role || 'contractor',
-                  city: 'Jubail',
-                  has_seen_tutorial: localStorage.getItem('ropelink_has_seen_tutorial') === 'true',
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                });
-              }
-            } catch {
-              sessionStorage.removeItem('ropelink_user');
-            }
+          } else if (isMounted) {
+            setUser(null);
+            setProfile(null);
           }
         }
       } catch (e) {
-        console.warn('Session initialization warning:', e);
+        console.warn('Supabase auth initialization error:', e);
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
-    fetchSession();
+    initializeAuth();
 
-    // Listen for Supabase auth state changes
-    let authListener: any = null;
+    let authSubscription: any = null;
     if (isSupabaseConfigured()) {
-      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (session?.user && isMounted) {
           setUser(session.user);
           const { data: prof } = await supabase
@@ -74,25 +56,18 @@ export function useSupabaseAuth() {
           setProfile(null);
         }
       });
-      authListener = data.subscription;
+      authSubscription = data.subscription;
     }
 
     return () => {
       isMounted = false;
-      if (authListener) authListener.unsubscribe();
+      if (authSubscription) authSubscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
     if (isSupabaseConfigured()) {
-      try {
-        await supabase.auth.signOut();
-      } catch (e) {
-        console.error('Sign out error', e);
-      }
-    }
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('ropelink_user');
+      await supabase.auth.signOut();
     }
     setUser(null);
     setProfile(null);

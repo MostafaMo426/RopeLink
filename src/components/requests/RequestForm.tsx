@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { SAUDI_CITIES, SPECIALTIES } from '@/lib/constants';
 import { RequestType, SaudiCity, CreateRequestInput } from '@/types/database';
@@ -17,24 +17,29 @@ export default function RequestForm({ type, onSubmit, loading }: RequestFormProp
   const [companyName, setCompanyName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState<SaudiCity>('Jubail');
-  const [startDate, setStartDate] = useState(
-    new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0]
-  );
+  const [startDate, setStartDate] = useState('');
   const [count, setCount] = useState(4);
   const [specialty, setSpecialty] = useState(SPECIALTIES[0].ar);
   const [notes, setNotes] = useState('');
 
+  useEffect(() => {
+    // Client-side deterministic default date
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    setStartDate(d.toISOString().split('T')[0]);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onSubmit({
-      company_name: companyName,
-      contact_phone: phone,
+      company_name: companyName.trim(),
+      contact_phone: phone.trim(),
       type,
       city,
-      start_date: startDate,
+      start_date: startDate || new Date().toISOString().split('T')[0],
       technician_count: count,
       specialty,
-      notes,
+      notes: notes.trim(),
     });
   };
 

@@ -44,7 +44,7 @@ export default function AuthFormFields({
                 required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="مثال: شركة المقاولات المتقدمة"
+                placeholder={t('companyPlaceholder')}
                 className="w-full ps-9 pe-3 py-2.5 bg-slate-900/90 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none"
               />
             </div>

@@ -1,4 +1,8 @@
 {
+  "metadata": {
+    "title": "RopeLink | Saudi B2B Industrial & Rope Access Marketplace",
+    "description": "Saudi Arabia's premier B2B marketplace to eliminate contractor idle capacity and rapidly mobilize certified IRATA/SPRAT rope access technicians for Vision 2030 megaprojects."
+  },
   "brand": {
     "name": "RopeLink",
     "enName": "RopeLink",
@@ -19,8 +23,11 @@
     "title": "B2B Marketplace for Industrial & Rope Access Manpower in KSA",
     "subtitle": "The smart solution for contractors to monetize idle crew capacity and rapidly mobilize certified IRATA/SPRAT technicians and specialized industrial trades.",
     "ctaProject": "I Have a Project",
+    "ctaProjectSub": "Post project requirements",
     "ctaManpower": "I Need Manpower",
+    "ctaManpowerSub": "Mobilize technicians rapidly",
     "ctaCrew": "I Have Available Crew",
+    "ctaCrewSub": "Monetize idle crew capacity",
     "activeTechs": "Certified Technicians Ready to Mobilize",
     "mobilizationTime": "Average Mobilization: 48 Hours",
     "saudiCitiesCovered": "Immediate Coverage Across Industrial Hubs"
@@ -33,7 +40,8 @@
     "card2Title": "Rapid 48-Hour Mobilization",
     "card2Desc": "Bypass traditional recruitment delays. Deploy certified teams in Jubail, Yanbu, NEOM, and Riyadh within 48 hours.",
     "card3Title": "Vetted & Certified Technicians",
-    "card3Desc": "Pre-screened professionals with valid IRATA L1/L2/L3, NDT Level II certifications, and Aramco/SABIC safety compliance."
+    "card3Desc": "Pre-screened professionals with valid IRATA L1/L2/L3, NDT Level II certifications, and Aramco/SABIC safety compliance.",
+    "verifiedBadge": "100% Vetted Ecosystem"
   },
   "marketStats": {
     "title": "Industrial Platform Performance",
@@ -55,6 +63,18 @@
     "step2Desc": "Our platform algorithmically pairs requirements with certified available crews based on proximity and skills.",
     "step3Title": "3. Mobilize & Execute On-Site",
     "step3Desc": "Finalize standardized B2B agreements and deploy crews directly to the industrial site ready to work."
+  },
+  "dashboard": {
+    "defaultCompany": "Certified Enterprise",
+    "defaultLocation": "Kingdom of Saudi Arabia",
+    "loadingUser": "Loading user...",
+    "restartTour": "Restart Guided Tour",
+    "activityTitle": "Active Requests & Deployments",
+    "totalCount": "Total",
+    "loadingRequests": "Loading requests from Supabase...",
+    "emptyTitle": "No requests submitted yet in the database.",
+    "emptySubtitle": "Select one of the actions above to submit your first manpower request.",
+    "techsCount": "Technicians"
   },
   "requestModal": {
     "titleProject": "Register New Project Requirements",
@@ -82,6 +102,7 @@
     "emailLabel": "Work Email",
     "passwordLabel": "Password",
     "companyLabel": "Company / Organization Name",
+    "companyPlaceholder": "e.g., Advanced Industrial Contracting Co.",
     "roleLabel": "Company Type",
     "roleContractor": "Main Contractor / Project Owner",
     "roleSupplier": "Manpower Provider / Subcontractor",
@@ -107,6 +128,13 @@
   },
   "footer": {
     "rights": "All rights reserved. RopeLink Industrial Marketplace © 2026",
-    "madeInKSA": "Designed and engineered for Saudi Arabia's contracting and industrial sector 🇸🇦"
+    "madeInKSA": "Designed and engineered for Saudi Arabia's contracting and industrial sector 🇸🇦",
+    "industrialZones": "Industrial Hubs",
+    "zone1": "Jubail Industrial 1 & 2",
+    "zone2": "Yanbu Industrial & Ras Al-Khair",
+    "zone3": "NEOM & Red Sea Megaprojects",
+    "zone4": "Riyadh, Jeddah & Dammam",
+    "supportTitle": "Operations & On-Site Support",
+    "location": "Kingdom of Saudi Arabia"
   }
 }

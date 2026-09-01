@@ -62,7 +62,7 @@ export default function DashboardPage() {
           >
             <Briefcase className="w-6 h-6 text-amber-400 mb-3 group-hover:scale-110 transition-transform" />
             <h3 className="font-bold text-white text-base">{tHero('ctaProject')}</h3>
-            <p className="text-xs text-slate-400 mt-1">تسجيل نطاق عمل لمشروع جديد</p>
+            <p className="text-xs text-slate-400 mt-1">{tHero('ctaProjectSub')}</p>
           </button>
 
           <button
@@ -71,7 +71,7 @@ export default function DashboardPage() {
           >
             <Users className="w-6 h-6 text-cyan-400 mb-3 group-hover:scale-110 transition-transform" />
             <h3 className="font-bold text-white text-base">{tHero('ctaManpower')}</h3>
-            <p className="text-xs text-slate-400 mt-1">طلب فنيين معتمدين وتسكين سريع</p>
+            <p className="text-xs text-slate-400 mt-1">{tHero('ctaManpowerSub')}</p>
           </button>
 
           <button
@@ -80,7 +80,7 @@ export default function DashboardPage() {
           >
             <UserCheck className="w-6 h-6 text-emerald-400 mb-3 group-hover:scale-110 transition-transform" />
             <h3 className="font-bold text-white text-base">{tHero('ctaCrew')}</h3>
-            <p className="text-xs text-slate-400 mt-1">عرض كادر متاح وتفادي التعطيل</p>
+            <p className="text-xs text-slate-400 mt-1">{tHero('ctaCrewSub')}</p>
           </button>
         </div>
 

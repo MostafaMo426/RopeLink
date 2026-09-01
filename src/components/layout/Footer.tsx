@@ -35,26 +35,26 @@ export default function Footer() {
 
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-3">
-              المناطق الصناعية
+              {t('industrialZones')}
             </h4>
             <ul className="space-y-2 text-xs text-slate-400">
-              <li>الجبيل الصناعية الأولى والثانية</li>
-              <li>ينبع الصناعية ومدينة رأس الخير</li>
-              <li>منطقة نيوم ومشاريع البحر الأحمر</li>
-              <li>الرياض، جدة والدمام</li>
+              <li>{t('zone1')}</li>
+              <li>{t('zone2')}</li>
+              <li>{t('zone3')}</li>
+              <li>{t('zone4')}</li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-3">
-              الدعم والتنسيق الميداني
+              {t('supportTitle')}
             </h4>
             <ul className="space-y-2 text-xs text-slate-400">
               <li className="flex items-center gap-2">
                 <PhoneCall className="w-3.5 h-3.5 text-amber-400" /> +966 11 000 0000
               </li>
               <li>ops@ropelink.sa</li>
-              <li>المملكة العربية السعودية</li>
+              <li>{t('location')}</li>
             </ul>
           </div>
         </div>

@@ -67,7 +67,7 @@ export default function HeroSection({ onSelectCTA }: HeroSectionProps) {
                 {t('ctaProject')}
               </span>
               <span className="text-xs text-slate-400 mt-1">
-                تسجيل متطلبات ومشاريع
+                {t('ctaProjectSub')}
               </span>
             </button>
 
@@ -83,7 +83,7 @@ export default function HeroSection({ onSelectCTA }: HeroSectionProps) {
                 {t('ctaManpower')}
               </span>
               <span className="text-xs text-slate-400 mt-1">
-                استقطاب فوري للكوادر
+                {t('ctaManpowerSub')}
               </span>
             </button>
 
@@ -99,7 +99,7 @@ export default function HeroSection({ onSelectCTA }: HeroSectionProps) {
                 {t('ctaCrew')}
               </span>
               <span className="text-xs text-slate-400 mt-1">
-                تسكين الفنيين الفائضين
+                {t('ctaCrewSub')}
               </span>
             </button>
           </motion.div>

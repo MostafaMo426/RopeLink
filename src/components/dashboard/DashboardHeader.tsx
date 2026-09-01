@@ -19,6 +19,7 @@ export default function DashboardHeader({
   onSignOut,
 }: DashboardHeaderProps) {
   const t = useTranslations('nav');
+  const tDash = useTranslations('dashboard');
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
@@ -26,7 +27,7 @@ export default function DashboardHeader({
         <div className="flex items-center gap-2 mb-1">
           <Building2 className="w-5 h-5 text-amber-500" />
           <h1 className="text-xl sm:text-2xl font-black text-white">
-            {profile?.company_name || user?.email?.split('@')[0] || 'منشأة معتمدة'}
+            {profile?.company_name || user?.email?.split('@')[0] || tDash('defaultCompany')}
           </h1>
           {profile?.role && (
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold uppercase">
@@ -37,12 +38,12 @@ export default function DashboardHeader({
         <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-400">
           <span className="flex items-center gap-1">
             <Mail className="w-3.5 h-3.5 text-slate-500" />
-            {user?.email || 'جاري التحميل...'}
+            {user?.email || tDash('loadingUser')}
           </span>
           <span className="text-slate-600">•</span>
           <span className="flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            {profile?.city || 'المملكة العربية السعودية'}
+            {profile?.city || tDash('defaultLocation')}
           </span>
         </div>
       </div>
@@ -53,7 +54,7 @@ export default function DashboardHeader({
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-amber-400 border border-slate-700 transition-colors cursor-pointer"
         >
           <HelpCircle className="w-4 h-4" />
-          <span>إعادة الجولة التعريفية</span>
+          <span>{tDash('restartTour')}</span>
         </button>
         <button
           onClick={onSignOut}

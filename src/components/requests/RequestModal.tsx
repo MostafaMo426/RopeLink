@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { RequestType, CreateRequestInput, ManpowerRequest } from '@/types/database';
+import { RequestType, CreateRequestInput } from '@/types/database';
 import { REQUEST_TYPE_META } from '@/lib/constants';
 import RequestForm from './RequestForm';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
@@ -26,6 +26,7 @@ export default function RequestModal({
   onCreated,
 }: RequestModalProps) {
   const t = useTranslations('requestModal');
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -51,36 +52,7 @@ export default function RequestModal({
           },
         ]);
         if (error) throw error;
-      } else {
-        let existing: ManpowerRequest[] = [];
-        if (typeof window !== 'undefined') {
-          const raw = localStorage.getItem('ropelink_requests');
-          if (raw && raw.trim()) {
-            try {
-              existing = JSON.parse(raw);
-            } catch {
-              existing = [];
-            }
-          }
-        }
-        const newReq: ManpowerRequest = {
-          id: 'req-' + Date.now(),
-          user_id: user?.id || null,
-          company_name: input.company_name,
-          contact_phone: input.contact_phone || null,
-          type: input.type,
-          city: input.city,
-          start_date: input.start_date,
-          technician_count: input.technician_count,
-          specialty: input.specialty || 'Rope Access IRATA',
-          status: 'pending',
-          notes: input.notes || null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        localStorage.setItem('ropelink_requests', JSON.stringify([newReq, ...existing]));
       }
-
       toast.success(t('successToast'));
       onCreated?.();
       onClose();
@@ -107,7 +79,7 @@ export default function RequestModal({
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div>
             <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold border mb-1.5 ${meta.badge}`}>
-              {meta.labelAr}
+              {locale === 'ar' ? meta.labelAr : meta.labelEn}
             </span>
             <h3 className="text-lg sm:text-xl font-bold text-white">
               {type === 'project'

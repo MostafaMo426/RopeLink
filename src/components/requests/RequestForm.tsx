@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { SAUDI_CITIES, SPECIALTIES } from '@/lib/constants';
 import { RequestType, SaudiCity, CreateRequestInput } from '@/types/database';
 import { Building2, Phone, MapPin, Calendar, Users, Wrench } from 'lucide-react';
@@ -14,16 +14,16 @@ interface RequestFormProps {
 
 export default function RequestForm({ type, onSubmit, loading }: RequestFormProps) {
   const t = useTranslations('requestModal');
+  const locale = useLocale();
   const [companyName, setCompanyName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState<SaudiCity>('Jubail');
   const [startDate, setStartDate] = useState('');
   const [count, setCount] = useState(4);
-  const [specialty, setSpecialty] = useState(SPECIALTIES[0].ar);
+  const [specialty, setSpecialty] = useState(locale === 'ar' ? SPECIALTIES[0].ar : SPECIALTIES[0].en);
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
-    // Client-side deterministic default date
     const d = new Date();
     d.setDate(d.getDate() + 2);
     setStartDate(d.toISOString().split('T')[0]);
@@ -92,7 +92,7 @@ export default function RequestForm({ type, onSubmit, loading }: RequestFormProp
             >
               {SAUDI_CITIES.map((c) => (
                 <option key={c.value} value={c.value} className="bg-slate-900 text-white">
-                  {c.labelAr} - {c.labelEn}
+                  {locale === 'ar' ? c.labelAr : c.labelEn}
                 </option>
               ))}
             </select>
@@ -148,8 +148,8 @@ export default function RequestForm({ type, onSubmit, loading }: RequestFormProp
             className="w-full ps-9 pe-3 py-2.5 bg-slate-900/90 border border-slate-700 rounded-lg text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none appearance-none"
           >
             {SPECIALTIES.map((s) => (
-              <option key={s.id} value={s.ar} className="bg-slate-900 text-white">
-                {s.ar} ({s.en})
+              <option key={s.id} value={locale === 'ar' ? s.ar : s.en} className="bg-slate-900 text-white">
+                {locale === 'ar' ? s.ar : s.en}
               </option>
             ))}
           </select>

@@ -71,7 +71,7 @@ export default function ValuePropsSection() {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center gap-2 text-xs font-semibold text-slate-500">
-                  <span>منظومة موثقة 100%</span>
+                  <span>{t('verifiedBadge')}</span>
                 </div>
               </motion.div>
             );

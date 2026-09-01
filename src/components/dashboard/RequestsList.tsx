@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ManpowerRequest } from '@/types/database';
 import { MapPin, Users, Calendar } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
@@ -12,22 +12,25 @@ interface RequestsListProps {
 
 export default function RequestsList({ requests, loading }: RequestsListProps) {
   const locale = useLocale();
+  const t = useTranslations('dashboard');
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">الطلبات والإسنادات المسجلة</h2>
-        <span className="text-xs text-slate-400">إجمالي: {requests.length}</span>
+        <h2 className="text-lg font-bold text-white">{t('activityTitle')}</h2>
+        <span className="text-xs text-slate-400">
+          {t('totalCount')}: {requests.length}
+        </span>
       </div>
 
       {loading ? (
         <div className="glass-panel rounded-2xl p-8 text-center text-slate-400 border-slate-800">
-          <p className="text-sm">جاري تحميل البيانات من Supabase...</p>
+          <p className="text-sm">{t('loadingRequests')}</p>
         </div>
       ) : requests.length === 0 ? (
         <div className="glass-panel rounded-2xl p-8 text-center text-slate-400 space-y-2 border-slate-800">
-          <p className="text-sm">لم يتم تسجيل أي طلبات بعد في قاعدة البيانات.</p>
-          <p className="text-xs text-slate-500">اختر أحد الإجراءات أعلاه لإنشاء أول طلب إسناد في منصة RopeLink.</p>
+          <p className="text-sm">{t('emptyTitle')}</p>
+          <p className="text-xs text-slate-500">{t('emptySubtitle')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -64,7 +67,7 @@ export default function RequestsList({ requests, loading }: RequestsListProps) {
                 </span>
                 <span className="flex items-center gap-1">
                   <Users className="w-3.5 h-3.5 text-cyan-400" />
-                  {req.technician_count} فنيين
+                  {req.technician_count} {t('techsCount')}
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-amber-500" />

@@ -1,72 +1,60 @@
-# RopeLink - Comprehensive Quality, Security & UX Test Matrix
+# RopeLink B2B Marketplace - Test Cases & Quality Assurance Matrix
 
-## Phase 1: Interactive Prototype, Onboarding & Request System
-
----
+## Phase 1 & Phase 2 Test Coverage
 
 ### 1. Database & Security Test Cases (Supabase & RLS)
 | ID | Test Scenario | Expected Result | Status |
 |---|---|---|---|
-| **SEC-01** | Unauthenticated user creates a request | Allowed (assigned `user_id = NULL` or linked upon signup). | ✅ Verified |
+| **SEC-01** | Open marketplace SELECT query | All authenticated users can discover active marketplace opportunities. | ✅ Verified (RLS Policy) |
 | **SEC-02** | Authenticated user reads own profile | Returns user's profile data matching `auth.uid()`. | ✅ Verified (RLS Policy) |
-| **SEC-03** | Authenticated user attempts to read another user's profile | Access denied (empty query result / RLS block). | ✅ Verified (RLS Policy) |
-| **SEC-04** | Authenticated user attempts to modify another user's request | Operation blocked by RLS policy. | ✅ Verified (RLS Policy) |
-| **SEC-05** | New user signup trigger executes | Row automatically inserted into `public.profiles` with `has_seen_tutorial = false`. | ✅ Verified (`handle_new_user` trigger) |
+| **SEC-03** | Non-admin user attempts to approve verification status | Denied by RLS policy; only Admins can update `verification_status`. | ✅ Verified (RLS Policy) |
+| **SEC-04** | Match proposal created between two parties | Both proposer and recipient have real-time visibility in `matches` table. | ✅ Verified (RLS Policy) |
+| **SEC-05** | New user signup trigger executes | Row automatically inserted into `public.profiles` with `verification_status = 'unverified'`. | ✅ Verified (`handle_new_user` trigger) |
 | **SEC-06** | Request created with `technician_count <= 0` | DB constraint violation (`technician_count > 0`). | ✅ Verified (Check Constraint) |
-| **SEC-07** | Invalid ENUM value submitted for `saudi_city` or `request_type` | Database rejects invalid cast. | ✅ Verified (PostgreSQL ENUMs) |
+| **SEC-07** | Invalid ENUM value submitted for `verification_status` or `match_status` | Database rejects invalid cast. | ✅ Verified (PostgreSQL ENUMs) |
 
 ---
 
-### 2. Localization & RTL Layout Test Cases (`next-intl`)
+### 2. Matching Engine Algorithm Test Cases (`src/lib/matching/engine.ts`)
 | ID | Test Scenario | Expected Result | Status |
 |---|---|---|---|
-| **I18N-01** | Default route `/` navigation | Resolves to default Saudi locale `/ar` with `dir="rtl"`. | ✅ Verified |
-| **I18N-02** | Locale switcher toggled to English | Route changes to `/en`, `dir="ltr"`, typography flips to English sans. | ✅ Verified |
-| **I18N-03** | Saudi business terminology check | Arabic uses "مقاول", "فنيين معتمدين", "منشأة", "سجل تجاري", "إسناد فوري". | ✅ Verified |
-| **I18N-04** | Form field text alignment in RTL | Inputs, icons, labels, and placeholders align to right start (`text-start`, `pe-`, `ps-`). | ✅ Verified |
-| **I18N-05** | Mobile navigation drawer in RTL | Slides in from the correct directional anchor without clipping. | ✅ Verified |
+| **ENG-01** | Exact IRATA trade match in same city (e.g. Jubail to Jubail) | Match score $\ge 90\%$ (Optimal Match / تطابق ممتاز). | ✅ Verified |
+| **ENG-02** | Same regional cluster (e.g. Jubail project with Dammam crew) | Proximity score 85%, aggregate score $\ge 75\%$. | ✅ Verified |
+| **ENG-03** | Mobilization start date difference $\le 2$ days | Full 100% timeline buffer credit awarded. | ✅ Verified |
+| **ENG-04** | Supplier crew size smaller than project demand | Headcount score scaled proportionally ($\ge 30\%$). | ✅ Verified |
+| **ENG-05** | Opposing trade types evaluated | Score accurately clamped between 0% and 100%. | ✅ Verified |
 
 ---
 
-### 3. Scroll-Linked Framer Motion Animation
+### 3. Contractor Verification & Trust Pipeline
 | ID | Test Scenario | Expected Result | Status |
 |---|---|---|---|
-| **ANIM-01** | Scroll from Top to Bottom of landing page | Rope technician icon smoothly rappels along the vertical rope with zero jitter. | ✅ Verified |
-| **ANIM-02** | Rapid scroll up & down | Physics spring damping (`stiffness: 85, damping: 22`) prevents overshooting or visual stutter. | ✅ Verified |
-| **ANIM-03** | Mobile viewport scroll | No horizontal scrollbars or page width overflows caused by rope SVG container. | ✅ Verified |
-| **ANIM-04** | Reduced motion preference | Animation adapts smoothly with bounded transforms. | ✅ Verified |
+| **VER-01** | Unverified contractor visits dashboard | Prominent `VerificationBanner` displays prompting CR submission. | ✅ Verified |
+| **VER-02** | Contractor submits 10-digit CR number | Status updates to `pending_review` and `TrustBadge` shows amber indicator. | ✅ Verified |
+| **VER-03** | Admin approves CR submission | Status changes to `verified`, green 100% Verified badge displayed on all marketplace listings. | ✅ Verified |
+| **VER-04** | Verified-only filter enabled in Marketplace | Non-verified opportunities filtered out from feed. | ✅ Verified |
 
 ---
 
-### 4. Interactive First-Time Tutorial (`driver.js`)
+### 4. Real-time Synchronization (`useRealtimeMarketplace`)
 | ID | Test Scenario | Expected Result | Status |
 |---|---|---|---|
-| **TOUR-01** | New user enters dashboard with `has_seen_tutorial = false` | Guided tour starts automatically highlighting Header, CTAs, and Stats. | ✅ Verified |
-| **TOUR-02** | User completes or skips tour | Supabase `profiles.has_seen_tutorial` is updated to `true`. | ✅ Verified |
-| **TOUR-03** | Returning user with `has_seen_tutorial = true` logs in | Guided tour does NOT automatically launch. | ✅ Verified |
-| **TOUR-04** | Responsive Tour Popover on Mobile ($< 480\text{px}$) | Popover fits on screen without overflow, buttons easily touchable ($\ge 44\text{px}$). | ✅ Verified |
-| **TOUR-05** | Tour Popover in RTL mode | Next/Back arrows and text correctly oriented for Arabic reading order. | ✅ Verified |
+| **RT-01** | Contractor posts new project requirement | Real-time channel broadcasts INSERT event, feed updates on all connected clients. | ✅ Verified |
+| **RT-02** | Admin changes request status | Update reflected on active contractor dashboards without page reload. | ✅ Verified |
+| **RT-03** | Match proposal sent to recipient | Recipient receives live notification and proposal in their dashboard. | ✅ Verified |
 
 ---
 
-### 5. Responsive Request Modal & Bottom Sheet
+### 5. Localization & RTL Layout (`next-intl`)
 | ID | Test Scenario | Expected Result | Status |
 |---|---|---|---|
-| **FORM-01** | Desktop viewport ($\ge 768\text{px}$) CTA click | Opens centered glassmorphic dialog with backdrop blur. | ✅ Verified |
-| **FORM-02** | Mobile viewport ($< 768\text{px}$) CTA click | Opens native-like bottom sheet with swipe-down indicator. | ✅ Verified |
-| **FORM-03** | Form validation with empty required fields | Displays clear bilingual HTML5/Zod required indicators under respective inputs. | ✅ Verified |
-| **FORM-04** | Valid form submission | Submits payload to Supabase/Session, displays success toast, and closes modal. | ✅ Verified |
-| **FORM-05** | Network error or offline submission | Shows descriptive error toast and keeps user inputs intact. | ✅ Verified |
+| **I18N-01** | Full dictionary key parity across AR & EN | 100% synchronized translation keys in `ar.json` and `en.json`. | ✅ Verified (Automated Test) |
+| **I18N-02** | Saudi industrial terminology validation | Authentic dialect used (*إسناد فوري*, *سجل تجاري موثق*, *نسبة التطابق الميداني*). | ✅ Verified |
+| **I18N-03** | Layout flipping between `/ar` and `/en` | CSS logical properties and directional alignment (`dir="rtl"` vs `dir="ltr"`). | ✅ Verified |
 
 ---
 
-### 6. Device & Aspect Ratio Matrix
-| Device / Viewport | Aspect Ratio | Target Width x Height | Test Focus | Status |
-|---|---|---|---|---|
-| **iPhone SE** | 16:9 | 375 x 667 | Compact header, bottom-sheet height, touch targets | ✅ Pass |
-| **iPhone 14 / 15 Pro** | 19.5:9 | 393 x 852 | Dynamic island safe area, scroll animation flow | ✅ Pass |
-| **Samsung Galaxy S24** | 20:9 | 412 x 915 | Tall aspect ratio, sticky CTA buttons | ✅ Pass |
-| **iPad Mini / Air (Portrait)** | 4:3 / 3:2 | 768 x 1024 | Breakpoint transition, grid layouts | ✅ Pass |
-| **iPad Pro (Landscape)** | 4:3 | 1366 x 1024 | 3-column CTA cards, rope anchor alignment | ✅ Pass |
-| **Standard Laptop / Desktop** | 16:9 | 1920 x 1080 | Glassmorphic cards, hero banner balance | ✅ Pass |
-| **Ultrawide Monitor** | 21:9 | 2560 x 1080 / 3440 x 1440 | Max-width content containment (`max-w-7xl`) | ✅ Pass |
+### 6. Architectural Modularity & File Size Limits
+| ID | Test Scenario | Expected Result | Status |
+|---|---|---|---|
+| **ARCH-01** | Every file in `src/` scanned for line counts | 100% of files strictly $< 200$ lines. | ✅ Verified (Automated Audit) |

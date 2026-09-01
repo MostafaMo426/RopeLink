@@ -6,6 +6,7 @@ import { ManpowerRequest, RequestStatus } from '@/types/database';
 import { ShieldCheck, Building } from 'lucide-react';
 import { toast } from 'sonner';
 import AdminRequestCard from './AdminRequestCard';
+import AdminVerificationQueue from './AdminVerificationQueue';
 
 interface AdminOperationsViewProps {
   requests: ManpowerRequest[];
@@ -56,6 +57,9 @@ export default function AdminOperationsView({
 
   return (
     <div className="space-y-6">
+      {/* Verification Queue for Admins */}
+      <AdminVerificationQueue />
+
       {/* Console Header & Filters */}
       <div
         id="tour-admin-console"

@@ -10,6 +10,14 @@ export type RequestStatus =
   | 'completed'
   | 'cancelled';
 
+export type VerificationStatus =
+  | 'unverified'
+  | 'pending_review'
+  | 'verified'
+  | 'rejected';
+
+export type MatchStatus = 'pending' | 'accepted' | 'declined' | 'completed';
+
 export type SaudiCity =
   | 'Riyadh'
   | 'Jeddah'
@@ -27,9 +35,12 @@ export interface Profile {
   id: string;
   company_name: string;
   cr_number?: string | null;
+  cr_document_url?: string | null;
+  hse_document_url?: string | null;
   phone?: string | null;
   role: UserRole;
   city: SaudiCity;
+  verification_status: VerificationStatus;
   has_seen_tutorial: boolean;
   created_at: string;
   updated_at: string;
@@ -37,7 +48,7 @@ export interface Profile {
 
 export interface ManpowerRequest {
   id: string;
-  user_id?: string | null;
+  user_id: string | null;
   company_name: string;
   contact_phone?: string | null;
   type: RequestType;
@@ -49,6 +60,22 @@ export interface ManpowerRequest {
   notes?: string | null;
   created_at: string;
   updated_at: string;
+  // Relational joins
+  profiles?: Profile | null;
+}
+
+export interface MatchProposal {
+  id: string;
+  request_id: string;
+  proposer_id: string;
+  recipient_id: string;
+  message?: string | null;
+  status: MatchStatus;
+  created_at: string;
+  updated_at: string;
+  // Relational joins
+  request?: ManpowerRequest | null;
+  proposer?: Profile | null;
 }
 
 export interface CreateRequestInput {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 import { Profile } from '@/types/database';
 import { User } from '@supabase/supabase-js';
@@ -9,6 +9,20 @@ export function useSupabaseAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchProfile = useCallback(async (uid: string) => {
+    if (!isSupabaseConfigured()) return;
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', uid)
+        .maybeSingle();
+      if (data) setProfile(data);
+    } catch (e) {
+      console.warn('Error fetching profile:', e);
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -20,12 +34,7 @@ export function useSupabaseAuth() {
           const { data: { user: currentUser } } = await supabase.auth.getUser();
           if (currentUser && isMounted) {
             setUser(currentUser);
-            const { data: prof } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', currentUser.id)
-              .maybeSingle();
-            if (prof && isMounted) setProfile(prof);
+            await fetchProfile(currentUser.id);
           } else if (isMounted) {
             setUser(null);
             setProfile(null);
@@ -45,12 +54,7 @@ export function useSupabaseAuth() {
       const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (session?.user && isMounted) {
           setUser(session.user);
-          const { data: prof } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          if (prof && isMounted) setProfile(prof);
+          await fetchProfile(session.user.id);
         } else if (isMounted) {
           setUser(null);
           setProfile(null);
@@ -63,7 +67,7 @@ export function useSupabaseAuth() {
       isMounted = false;
       if (authSubscription) authSubscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile]);
 
   const signOut = async () => {
     if (isSupabaseConfigured()) {
@@ -73,5 +77,11 @@ export function useSupabaseAuth() {
     setProfile(null);
   };
 
-  return { user, profile, loading, signOut, setUser };
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchProfile(user.id);
+    }
+  };
+
+  return { user, profile, loading, signOut, setUser, refreshProfile };
 }

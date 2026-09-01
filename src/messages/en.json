@@ -151,7 +151,9 @@
     "approveBtn": "Approve",
     "rejectBtn": "Reject",
     "approveSuccessToast": "Enterprise verified and trust badge granted",
-    "rejectSuccessToast": "Verification request rejected"
+    "rejectSuccessToast": "Verification request rejected",
+    "viewAttachedDoc": "View Attached Document (PDF/Image)",
+    "noAttachedDoc": "No document attached"
   },
   "requestModal": {
     "titleProject": "Post New Project Requirements",

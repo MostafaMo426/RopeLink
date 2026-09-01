@@ -151,7 +151,9 @@
     "approveBtn": "اعتماد فوري",
     "rejectBtn": "رفض",
     "approveSuccessToast": "تم اعتماد المنشأة ومنحها شارة التوثيق بنجاح",
-    "rejectSuccessToast": "تم رفض طلب التوثيق"
+    "rejectSuccessToast": "تم رفض طلب التوثيق",
+    "viewAttachedDoc": "استعراض المستند المرفق (PDF/صورة)",
+    "noAttachedDoc": "لا يوجد مستند مرفق"
   },
   "requestModal": {
     "titleProject": "تسجيل متطلبات مشروع جديد",

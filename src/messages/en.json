@@ -77,7 +77,9 @@
     "techsCount": "Technicians",
     "tabMyRequests": "My Requests & Deployments",
     "tabMarketplace": "B2B Marketplace Feed",
-    "tabProposals": "Match Proposals"
+    "tabProposals": "Match Proposals",
+    "refreshBtn": "Refresh Data",
+    "refreshedToast": "Deployments refreshed successfully"
   },
   "admin": {
     "consoleTitle": "Operations Control Center (Admin Console)",

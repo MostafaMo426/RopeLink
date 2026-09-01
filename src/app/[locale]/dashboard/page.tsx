@@ -149,7 +149,11 @@ export default function DashboardPage() {
                 onRefresh={refreshMarketplace}
               />
             ) : activeTab === 'my_requests' ? (
-              <RequestsList requests={myRequests} loading={reqLoading} />
+              <RequestsList
+                requests={myRequests}
+                loading={reqLoading}
+                onRefresh={refreshRequests}
+              />
             ) : (
               <MatchProposalsList
                 matches={matches}

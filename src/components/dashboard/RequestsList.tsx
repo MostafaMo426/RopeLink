@@ -1,28 +1,52 @@
 'use client';
 
+import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ManpowerRequest } from '@/types/database';
-import { MapPin, Users, Calendar } from 'lucide-react';
+import { MapPin, Users, Calendar, RefreshCw } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { getCityLabel, getStatusLabel, getSpecialtyLabel } from '@/lib/constants';
 import TrustBadge from '@/components/verification/TrustBadge';
+import { toast } from 'sonner';
 
 interface RequestsListProps {
   requests: ManpowerRequest[];
   loading?: boolean;
+  onRefresh?: () => Promise<void> | void;
 }
 
-export default function RequestsList({ requests, loading }: RequestsListProps) {
+export default function RequestsList({ requests, loading, onRefresh }: RequestsListProps) {
   const locale = useLocale();
   const t = useTranslations('dashboard');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    setRefreshing(true);
+    await onRefresh();
+    setTimeout(() => {
+      setRefreshing(false);
+      toast.success(t('refreshedToast'));
+    }, 400);
+  };
 
   return (
     <div id="tour-requests" className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-white">{t('activityTitle')}</h2>
-        <span className="text-xs text-slate-400">
-          {t('totalCount')}: {requests.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800 hover:border-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-amber-400' : ''}`} />
+            <span>{t('refreshBtn')}</span>
+          </button>
+          <span className="text-xs text-slate-400">
+            {t('totalCount')}: {requests.length}
+          </span>
+        </div>
       </div>
 
       {loading ? (

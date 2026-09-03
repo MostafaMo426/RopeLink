@@ -377,6 +377,8 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('verification-docs', 'verification-docs', false)
 ON CONFLICT (id) DO UPDATE SET public = false;
 
+DROP POLICY IF EXISTS "Allow public document viewing" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated uploads" ON storage.objects;
 DROP POLICY IF EXISTS "Public Access" ON storage.objects;
 DROP POLICY IF EXISTS "Allow Public Read" ON storage.objects;
 DROP POLICY IF EXISTS "Allow Public Access" ON storage.objects;

@@ -59,6 +59,8 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 *.pdf
 !RopeLink-Executive-Report-*.pdf
 !RopeLink-Pricing-Proposal.pdf
+!RopeLink-Contract.pdf
+!RopeLink-Payment-Schedule.pdf
 
 # IDE & Editor Settings
 .idea/

@@ -371,11 +371,16 @@ DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages; 
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.crew_rosters; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- 17. Supabase Storage Policies for verification-docs Bucket
--- Ensure private bucket
+-- Force private bucket (disables anonymous public CDN bypass)
+UPDATE storage.buckets SET public = false WHERE id = 'verification-docs';
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('verification-docs', 'verification-docs', false)
 ON CONFLICT (id) DO UPDATE SET public = false;
 
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Public Read" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Public Access" ON storage.objects;
+DROP POLICY IF EXISTS "Anyone can view verification docs" ON storage.objects;
 DROP POLICY IF EXISTS "Users can upload own verification docs" ON storage.objects;
 CREATE POLICY "Users can upload own verification docs" ON storage.objects
 FOR INSERT WITH CHECK (

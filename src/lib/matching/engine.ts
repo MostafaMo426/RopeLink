@@ -14,6 +14,11 @@ const REGION_MAP: Record<SaudiCity, string> = {
   Other: 'Other',
 };
 
+export interface EligibilityResult {
+  eligible: boolean;
+  reason?: string;
+}
+
 export interface MatchScoreResult {
   score: number;
   breakdown: {
@@ -25,10 +30,55 @@ export interface MatchScoreResult {
   recommendationKey: 'high' | 'good' | 'partial';
 }
 
+export function isEligibleMatch(
+  demand: ManpowerRequest,
+  supply: ManpowerRequest
+): EligibilityResult {
+  const isDemandA = demand.type === 'need_manpower' || demand.type === 'project';
+  const isSupplyA = demand.type === 'available_crew';
+  const isDemandB = supply.type === 'need_manpower' || supply.type === 'project';
+  const isSupplyB = supply.type === 'available_crew';
+
+  if ((isDemandA && !isSupplyB) || (isSupplyA && !isDemandB)) {
+    return { eligible: false, reason: 'Request types must be complementary' };
+  }
+
+  if (
+    !demand.technician_count ||
+    demand.technician_count <= 0 ||
+    !supply.technician_count ||
+    supply.technician_count <= 0
+  ) {
+    return { eligible: false, reason: 'Technician count must be positive' };
+  }
+
+  const dDate = new Date(demand.start_date).getTime();
+  const sDate = new Date(supply.start_date).getTime();
+  if (isNaN(dDate) || isNaN(sDate)) {
+    return { eligible: false, reason: 'Invalid timeline dates' };
+  }
+
+  return { eligible: true };
+}
+
 export function calculateMatchScore(
   demand: ManpowerRequest,
   supply: ManpowerRequest
 ): MatchScoreResult {
+  const eligibility = isEligibleMatch(demand, supply);
+  if (!eligibility.eligible) {
+    return {
+      score: 0,
+      breakdown: {
+        specialtyScore: 0,
+        locationScore: 0,
+        timelineScore: 0,
+        headcountScore: 0,
+      },
+      recommendationKey: 'partial',
+    };
+  }
+
   // 1. Specialty / Trade Matching (Weight: 40%)
   let specialtyScore = 50;
   if (demand.specialty === supply.specialty) {
@@ -37,12 +87,18 @@ export function calculateMatchScore(
     demand.specialty.toLowerCase().includes('irata') &&
     supply.specialty.toLowerCase().includes('irata')
   ) {
-    if (supply.specialty.toLowerCase().includes('l3') || supply.specialty.toLowerCase().includes('supervisor')) {
+    if (
+      supply.specialty.toLowerCase().includes('l3') ||
+      supply.specialty.toLowerCase().includes('supervisor')
+    ) {
       specialtyScore = 95;
     } else {
       specialtyScore = 80;
     }
-  } else if (demand.specialty.toLowerCase().includes('ndt') && supply.specialty.toLowerCase().includes('ndt')) {
+  } else if (
+    demand.specialty.toLowerCase().includes('ndt') &&
+    supply.specialty.toLowerCase().includes('ndt')
+  ) {
     specialtyScore = 90;
   }
 
@@ -79,7 +135,10 @@ export function calculateMatchScore(
   if (supply.technician_count >= demand.technician_count) {
     headcountScore = 100;
   } else {
-    headcountScore = Math.max(30, Math.round((supply.technician_count / demand.technician_count) * 100));
+    headcountScore = Math.max(
+      30,
+      Math.round((supply.technician_count / demand.technician_count) * 100)
+    );
   }
 
   // Final Weighted Aggregate (0 - 100)

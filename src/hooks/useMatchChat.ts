@@ -48,7 +48,6 @@ export function useMatchChat(matchId?: string, currentUserId?: string) {
         },
         async (payload) => {
           const newMsg = payload.new as ChatMessage;
-          // Fetch sender profile info
           const { data: senderProfile } = await supabase
             .from('profiles')
             .select('*')
@@ -69,25 +68,30 @@ export function useMatchChat(matchId?: string, currentUserId?: string) {
   }, [matchId, fetchMessages]);
 
   const sendMessage = async (content: string): Promise<boolean> => {
-    if (!matchId || !currentUserId || !content.trim()) return false;
+    const cleanContent = content.trim().slice(0, 1000);
+    if (!matchId || !cleanContent) return false;
 
     try {
       if (isSupabaseConfigured()) {
+        // Derive authenticated sender directly from session to prevent spoofing
+        const { data: { user } } = await supabase.auth.getUser();
+        const activeSenderId = user?.id || currentUserId;
+        if (!activeSenderId) return false;
+
         const { error } = await supabase.from('chat_messages').insert({
           match_id: matchId,
-          sender_id: currentUserId,
-          content: content.trim(),
+          sender_id: activeSenderId,
+          content: cleanContent,
         });
 
         if (error) throw error;
         return true;
       } else {
-        // Local simulation fallback
         const mockMsg: ChatMessage = {
           id: `msg_${Date.now()}`,
           match_id: matchId,
-          sender_id: currentUserId,
-          content: content.trim(),
+          sender_id: currentUserId || 'anon',
+          content: cleanContent,
           is_read: false,
           created_at: new Date().toISOString(),
         };

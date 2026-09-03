@@ -62,7 +62,7 @@ export default function AgreementSignatureModal({
 
         <p className="text-xs text-slate-300 leading-relaxed">{t('signModalDesc')}</p>
 
-        {/* Digital Stamp Simulation */}
+        {/* Electronic Acceptance Record */}
         <div className="p-4 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
           <Shield className="w-6 h-6 text-amber-400 mx-auto" />
           <div className="text-xs font-bold text-amber-300 uppercase tracking-wide">

@@ -122,7 +122,7 @@ RETURNS BOOLEAN AS $$
 BEGIN
     RETURN EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin');
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public, pg_temp;
 
 -- 10. Automated Profile Creation Trigger (Prevents Role Escalation on Signup)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -162,8 +162,14 @@ BEGIN
         IF NEW.role IS DISTINCT FROM OLD.role THEN
             RAISE EXCEPTION 'Unauthorized: Normal users cannot change their role';
         END IF;
+        -- Normal users can only request verification (transitioning to pending_review)
+        -- They CANNOT set their status to 'verified' or manipulate verification arbitrarily
         IF NEW.verification_status IS DISTINCT FROM OLD.verification_status THEN
-            RAISE EXCEPTION 'Unauthorized: Normal users cannot self-verify';
+            IF NEW.verification_status = 'verified' THEN
+                RAISE EXCEPTION 'Unauthorized: Normal users cannot self-verify';
+            ELSIF NEW.verification_status != 'pending_review' THEN
+                RAISE EXCEPTION 'Unauthorized: Normal users can only submit verification for review';
+            END IF;
         END IF;
     END IF;
 
@@ -182,7 +188,7 @@ BEGIN
     NEW.updated_at := TIMEZONE('utc'::text, NOW());
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 DROP TRIGGER IF EXISTS trg_prevent_profile_privilege_escalation ON public.profiles;
 CREATE TRIGGER trg_prevent_profile_privilege_escalation
@@ -232,7 +238,7 @@ BEGIN
     NEW.updated_at := TIMEZONE('utc'::text, NOW());
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 DROP TRIGGER IF EXISTS trg_enforce_agreement_signature_rules ON public.agreements;
 CREATE TRIGGER trg_enforce_agreement_signature_rules
@@ -287,7 +293,7 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 DROP TRIGGER IF EXISTS trg_enforce_mobilization_sequence ON public.agreements;
 CREATE TRIGGER trg_enforce_mobilization_sequence
@@ -363,3 +369,42 @@ DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.matches; EXCEPT
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.agreements; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.crew_rosters; EXCEPTION WHEN OTHERS THEN NULL; END $$;
+
+-- 17. Supabase Storage Policies for verification-docs Bucket
+-- Ensure private bucket
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('verification-docs', 'verification-docs', false)
+ON CONFLICT (id) DO UPDATE SET public = false;
+
+DROP POLICY IF EXISTS "Users can upload own verification docs" ON storage.objects;
+CREATE POLICY "Users can upload own verification docs" ON storage.objects
+FOR INSERT WITH CHECK (
+    bucket_id = 'verification-docs' AND
+    auth.uid() IS NOT NULL AND
+    (auth.uid()::text = (storage.foldername(name))[1])
+);
+
+DROP POLICY IF EXISTS "Users and Admins can read verification docs" ON storage.objects;
+CREATE POLICY "Users and Admins can read verification docs" ON storage.objects
+FOR SELECT USING (
+    bucket_id = 'verification-docs' AND (
+        (auth.uid()::text = (storage.foldername(name))[1]) OR
+        public.is_admin()
+    )
+);
+
+DROP POLICY IF EXISTS "Users can update own verification docs" ON storage.objects;
+CREATE POLICY "Users can update own verification docs" ON storage.objects
+FOR UPDATE USING (
+    bucket_id = 'verification-docs' AND
+    auth.uid() IS NOT NULL AND
+    (auth.uid()::text = (storage.foldername(name))[1])
+);
+
+DROP POLICY IF EXISTS "Users can delete own verification docs" ON storage.objects;
+CREATE POLICY "Users can delete own verification docs" ON storage.objects
+FOR DELETE USING (
+    bucket_id = 'verification-docs' AND
+    auth.uid() IS NOT NULL AND
+    (auth.uid()::text = (storage.foldername(name))[1])
+);

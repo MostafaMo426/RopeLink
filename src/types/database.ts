@@ -48,6 +48,22 @@ export interface Profile {
   updated_at: string;
 }
 
+/**
+ * Safe subset returned by the `public.profile_directory` DB view.
+ * Excludes sensitive columns: cr_number, cr_document_url, hse_document_url, phone.
+ * Use this type for any counterparty join (agreements, matches, chat senders).
+ */
+export interface ProfileDirectory {
+  id: string;
+  company_name: string;
+  role: UserRole;
+  city: SaudiCity;
+  verification_status: VerificationStatus;
+  has_seen_tutorial: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ManpowerRequest {
   id: string;
   user_id: string;
@@ -110,8 +126,9 @@ export interface Agreement {
   current_milestone: MilestoneStage;
   created_at: string;
   updated_at: string;
-  proposer?: Profile | null;
-  recipient?: Profile | null;
+  // Counterparty data comes from the profile_directory view (no sensitive columns).
+  proposer?: ProfileDirectory | null;
+  recipient?: ProfileDirectory | null;
 }
 
 export interface ChatMessage {
@@ -121,7 +138,8 @@ export interface ChatMessage {
   content: string;
   is_read: boolean;
   created_at: string;
-  sender?: Profile | null;
+  // Sender data comes from the profile_directory view (no sensitive columns).
+  sender?: ProfileDirectory | null;
 }
 
 export interface CrewRosterMember {

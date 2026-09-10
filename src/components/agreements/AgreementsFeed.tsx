@@ -12,8 +12,9 @@ interface AgreementsFeedProps {
   agreements: Agreement[];
   loading?: boolean;
   currentUserId?: string;
-  onSignAgreement: (agreementId: string, isProposer: boolean) => Promise<boolean>;
-  onAdvanceMilestone: (agreementId: string, nextMilestone: MilestoneStage) => Promise<boolean>;
+  // H1 FIX: now returns { success, error? } so the modal can surface DB rejections.
+  onSignAgreement: (agreementId: string, isProposer: boolean) => Promise<{ success: boolean; error?: string }>;
+  onAdvanceMilestone: (agreementId: string, nextMilestone: MilestoneStage) => Promise<{ success: boolean; error?: string }>;
   onRefresh?: () => Promise<void> | void;
 }
 

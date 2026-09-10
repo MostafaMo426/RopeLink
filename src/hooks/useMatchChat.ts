@@ -13,9 +13,12 @@ export function useMatchChat(matchId?: string, currentUserId?: string) {
     setLoading(true);
     try {
       if (isSupabaseConfigured()) {
+        // U6 FIX: Use profile_directory view for sender join (Migration 002: C1 fix).
+        // The base profiles table now returns 0 rows for cross-user SELECTs;
+        // profile_directory is a SECURITY DEFINER view that exposes only safe columns.
         const { data, error } = await supabase
           .from('chat_messages')
-          .select('*, sender:sender_id(*)')
+          .select('*, sender:profile_directory!chat_messages_sender_id_fkey(id, company_name, role, city, verification_status, has_seen_tutorial, created_at, updated_at)')
           .eq('match_id', matchId)
           .order('created_at', { ascending: true });
 
@@ -48,9 +51,10 @@ export function useMatchChat(matchId?: string, currentUserId?: string) {
         },
         async (payload) => {
           const newMsg = payload.new as ChatMessage;
+          // U6 FIX: Fetch sender profile from the secure view, not base table.
           const { data: senderProfile } = await supabase
-            .from('profiles')
-            .select('*')
+            .from('profile_directory')
+            .select('id, company_name, role, city, verification_status, has_seen_tutorial, created_at, updated_at')
             .eq('id', newMsg.sender_id)
             .single();
 

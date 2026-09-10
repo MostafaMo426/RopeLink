@@ -4,6 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 import { Agreement, MilestoneStage, CrewRosterMember } from '@/types/database';
 
+// Columns fetched from the profile_directory view (Migration 002: C1 fix).
+// Excludes sensitive columns: cr_number, cr_document_url, hse_document_url, phone.
+const DIRECTORY_COLS = 'id, company_name, role, city, verification_status, has_seen_tutorial, created_at, updated_at';
+
 export function useAgreements(currentUserId?: string) {
   const [agreements, setAgreements] = useState<Agreement[]>([]);
   const [loading, setLoading] = useState(false);
@@ -13,13 +17,20 @@ export function useAgreements(currentUserId?: string) {
     setLoading(true);
     try {
       if (isSupabaseConfigured()) {
+        // U6 FIX: Join counterparty data through the secure profile_directory
+        // view instead of the base profiles table, which now returns 0 rows
+        // for cross-user queries after Migration 002 (C1 RLS lockdown).
         const { data, error } = await supabase
           .from('agreements')
-          .select('*, proposer:proposer_id(*), recipient:recipient_id(*)')
+          .select(
+            `*, proposer:profile_directory!agreements_proposer_id_fkey(${DIRECTORY_COLS}), recipient:profile_directory!agreements_recipient_id_fkey(${DIRECTORY_COLS})`
+          )
           .or(`proposer_id.eq.${currentUserId},recipient_id.eq.${currentUserId}`)
           .order('created_at', { ascending: false });
 
-        if (!error && data) {
+        if (error) {
+          console.warn('Agreements fetch error:', error.message);
+        } else if (data) {
           setAgreements(data as Agreement[]);
         }
       }
@@ -63,6 +74,8 @@ export function useAgreements(currentUserId?: string) {
   }): Promise<Agreement | null> => {
     try {
       if (isSupabaseConfigured()) {
+        // Trigger enforce_agreement_initial_state (Migration 001: C2) will hard-reset
+        // status and acceptance fields regardless of payload — these are safe defaults.
         const { data, error } = await supabase
           .from('agreements')
           .insert({
@@ -70,7 +83,9 @@ export function useAgreements(currentUserId?: string) {
             status: 'draft',
             current_milestone: 'agreement_signed',
           })
-          .select('*, proposer:proposer_id(*), recipient:recipient_id(*)')
+          .select(
+            `*, proposer:profile_directory!agreements_proposer_id_fkey(${DIRECTORY_COLS}), recipient:profile_directory!agreements_recipient_id_fkey(${DIRECTORY_COLS})`
+          )
           .single();
 
         if (error) throw error;
@@ -84,61 +99,111 @@ export function useAgreements(currentUserId?: string) {
     }
   };
 
-  const signAgreement = async (agreementId: string, isProposer: boolean): Promise<boolean> => {
+  /**
+   * H1 FIX: signAgreement — aligned to the trigger-enforced lifecycle:
+   *
+   *   draft → pending_proposer_sig  (proposer clicks sign first)
+   *   pending_proposer_sig → pending_recipient_sig  (proposer signs)
+   *   pending_recipient_sig → active  (recipient signs, both accepted)
+   *
+   * The trigger (Migration 002/003) enforces:
+   *   - The caller must be the correct party (proposer/recipient).
+   *   - terms_accepted_* is permanent once TRUE.
+   *   - 'active' requires dual acceptance.
+   *
+   * This function returns { success: boolean; error?: string } so the
+   * modal can surface DB-level rejection messages to the user (H1).
+   */
+  const signAgreement = async (
+    agreementId: string,
+    isProposer: boolean
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!isSupabaseConfigured()) return { success: false, error: 'Supabase not configured' };
+
     try {
-      if (isSupabaseConfigured()) {
-        const updatePayload = isProposer
-          ? { terms_accepted_proposer: true, proposer_signed_at: new Date().toISOString() }
-          : { terms_accepted_recipient: true, recipient_signed_at: new Date().toISOString() };
+      // Step 1: Fetch the current agreement state to determine the correct
+      // next status transition without relying on stale client state.
+      const { data: current, error: fetchErr } = await supabase
+        .from('agreements')
+        .select('id, status, terms_accepted_proposer, terms_accepted_recipient')
+        .eq('id', agreementId)
+        .single();
 
-        // Fetch current to check if both signed
-        const { data: current } = await supabase
-          .from('agreements')
-          .select('*')
-          .eq('id', agreementId)
-          .single();
-
-        const bothSigned = isProposer
-          ? current?.terms_accepted_recipient
-          : current?.terms_accepted_proposer;
-
-        const finalStatus = bothSigned ? 'active' : isProposer ? 'pending_recipient_sig' : 'pending_proposer_sig';
-
-        const { error } = await supabase
-          .from('agreements')
-          .update({ ...updatePayload, status: finalStatus })
-          .eq('id', agreementId);
-
-        if (error) throw error;
-        await fetchAgreements();
-        return true;
+      if (fetchErr || !current) {
+        return { success: false, error: fetchErr?.message ?? 'Agreement not found' };
       }
-      return false;
-    } catch (err) {
+
+      // Step 2: Build the signing payload for the correct party.
+      const signingPayload = isProposer
+        ? { terms_accepted_proposer: true, proposer_signed_at: new Date().toISOString() }
+        : { terms_accepted_recipient: true, recipient_signed_at: new Date().toISOString() };
+
+      // Step 3: Determine the correct next status based on current state.
+      // Trigger C2 will also validate this, but computing it client-side
+      // avoids a round-trip error on an obvious pre-condition failure.
+      const otherPartyHasSigned = isProposer
+        ? current.terms_accepted_recipient === true
+        : current.terms_accepted_proposer === true;
+
+      let nextStatus: string;
+      if (otherPartyHasSigned) {
+        // Both parties will have signed after this update → activate.
+        nextStatus = 'active';
+      } else if (isProposer) {
+        // Proposer signs first: draft → pending_proposer_sig is handled by
+        // the DB trigger. The frontend status transitions:
+        //   If current is 'draft' or 'pending_proposer_sig', move to pending_recipient_sig.
+        nextStatus = 'pending_recipient_sig';
+      } else {
+        // Recipient signs first (rare but allowed): move to pending_proposer_sig.
+        nextStatus = 'pending_proposer_sig';
+      }
+
+      // Step 4: Submit the update. The BEFORE UPDATE trigger enforces all
+      // security rules — if it raises, the error surfaces here.
+      const { error: updateErr } = await supabase
+        .from('agreements')
+        .update({ ...signingPayload, status: nextStatus })
+        .eq('id', agreementId);
+
+      if (updateErr) {
+        // Surface the DB trigger's message directly so the UI can show it.
+        // Trigger messages are intentionally human-readable (Migration 002/003).
+        return { success: false, error: updateErr.message };
+      }
+
+      await fetchAgreements();
+      return { success: true };
+    } catch (err: any) {
       console.error('Sign agreement error:', err);
-      return false;
+      return { success: false, error: err?.message ?? 'Unexpected error during signing' };
     }
   };
 
-  const advanceMilestone = async (agreementId: string, nextMilestone: MilestoneStage): Promise<boolean> => {
-    try {
-      if (isSupabaseConfigured()) {
-        const { error } = await supabase
-          .from('agreements')
-          .update({
-            current_milestone: nextMilestone,
-            status: nextMilestone === 'completed' ? 'completed' : 'active',
-          })
-          .eq('id', agreementId);
+  const advanceMilestone = async (
+    agreementId: string,
+    nextMilestone: MilestoneStage
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!isSupabaseConfigured()) return { success: false, error: 'Supabase not configured' };
 
-        if (error) throw error;
-        await fetchAgreements();
-        return true;
+    try {
+      const { error } = await supabase
+        .from('agreements')
+        .update({
+          current_milestone: nextMilestone,
+          status: nextMilestone === 'completed' ? 'completed' : 'active',
+        })
+        .eq('id', agreementId);
+
+      if (error) {
+        return { success: false, error: error.message };
       }
-      return false;
-    } catch (err) {
+
+      await fetchAgreements();
+      return { success: true };
+    } catch (err: any) {
       console.error('Advance milestone error:', err);
-      return false;
+      return { success: false, error: err?.message ?? 'Unexpected error advancing milestone' };
     }
   };
 

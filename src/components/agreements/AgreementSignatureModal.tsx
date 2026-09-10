@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { X, PenTool, CheckCircle2, Shield } from 'lucide-react';
+import { X, PenTool, CheckCircle2, Shield, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AgreementSignatureModalProps {
@@ -12,7 +12,9 @@ interface AgreementSignatureModalProps {
   agreementId: string;
   companyName: string;
   isProposer: boolean;
-  onSign: (agreementId: string, isProposer: boolean) => Promise<boolean>;
+  // H1 FIX: onSign now returns { success, error? } instead of bare boolean,
+  // allowing DB trigger rejection messages to surface in the UI.
+  onSign: (agreementId: string, isProposer: boolean) => Promise<{ success: boolean; error?: string }>;
 }
 
 export default function AgreementSignatureModal({
@@ -25,16 +27,27 @@ export default function AgreementSignatureModal({
 }: AgreementSignatureModalProps) {
   const t = useTranslations('agreements');
   const [signing, setSigning] = useState(false);
+  // H1 FIX: localError holds a DB-level or network error message shown inline.
+  const [localError, setLocalError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleConfirm = async () => {
     setSigning(true);
-    const success = await onSign(agreementId, isProposer);
+    setLocalError(null);
+
+    const result = await onSign(agreementId, isProposer);
     setSigning(false);
-    if (success) {
+
+    if (result.success) {
       toast.success(t('toastSigned'));
       onClose();
+    } else {
+      // H1 FIX: Surface the rejection reason inline so the user understands
+      // why the action failed (e.g. trigger guard, prerequisite not met).
+      const msg = result.error ?? t('signErrorFallback');
+      setLocalError(msg);
+      toast.error(t('toastSignFailed'));
     }
   };
 
@@ -76,6 +89,14 @@ export default function AgreementSignatureModal({
             <span>{t('stampReady')}</span>
           </div>
         </div>
+
+        {/* H1 FIX: Inline error panel — shown only when the DB rejects the action. */}
+        {localError && (
+          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-red-400" />
+            <p className="text-[11px] leading-relaxed break-words">{localError}</p>
+          </div>
+        )}
 
         <button
           disabled={signing}

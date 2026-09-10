@@ -15,7 +15,10 @@ export function useRealtimeMarketplace(userId?: string) {
       if (isSupabaseConfigured()) {
         const { data, error } = await supabase
           .from('requests')
-          .select('*, profiles(*)')
+          // Use the secure profile_directory view (Migration 002: C1 fix).
+          // This view excludes sensitive columns: cr_number, cr_document_url,
+          // hse_document_url, phone — only safe directory fields are returned.
+          .select('*, profiles:profile_directory!requests_user_id_fkey(id, company_name, city, verification_status)')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -27,7 +30,9 @@ export function useRealtimeMarketplace(userId?: string) {
         if (userId) {
           const { data: matchData, error: matchErr } = await supabase
             .from('matches')
-            .select('*, request:requests(*), proposer:profiles!matches_proposer_id_fkey(*), recipient:profiles!matches_recipient_id_fkey(*)')
+            // Use profile_directory view for match participants (C1 fix).
+            // Exposes only safe columns, not sensitive business documents.
+            .select('*, request:requests(*), proposer:profile_directory!matches_proposer_id_fkey(id, company_name, city, verification_status), recipient:profile_directory!matches_recipient_id_fkey(id, company_name, city, verification_status)')
             .or(`proposer_id.eq.${userId},recipient_id.eq.${userId}`)
             .order('created_at', { ascending: false });
           if (!matchErr && matchData) {

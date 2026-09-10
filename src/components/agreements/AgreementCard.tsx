@@ -12,7 +12,7 @@ interface AgreementCardProps {
   currentUserId?: string;
   onOpenSignModal: (agreement: Agreement, isProposer: boolean) => void;
   onOpenRosterModal: (agreementId: string) => void;
-  onAdvanceMilestone: (agreementId: string, nextMilestone: MilestoneStage) => Promise<boolean>;
+  onAdvanceMilestone: (agreementId: string, nextMilestone: MilestoneStage) => Promise<{ success: boolean; error?: string }>;
 }
 
 export default function AgreementCard({

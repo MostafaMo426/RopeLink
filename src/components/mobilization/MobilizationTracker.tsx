@@ -8,7 +8,7 @@ import { CheckCircle2, Circle, ArrowRight, Sparkles } from 'lucide-react';
 interface MobilizationTrackerProps {
   currentMilestone: MilestoneStage;
   agreementId: string;
-  onAdvanceMilestone?: (agreementId: string, nextMilestone: MilestoneStage) => Promise<boolean>;
+  onAdvanceMilestone?: (agreementId: string, nextMilestone: MilestoneStage) => Promise<{ success: boolean; error?: string }>;
 }
 
 const STAGES: { key: MilestoneStage; stageNum: number; isLegalGateway?: boolean }[] = [

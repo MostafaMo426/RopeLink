@@ -138,25 +138,34 @@ export function useAgreements(currentUserId?: string) {
         ? { terms_accepted_proposer: true, proposer_signed_at: new Date().toISOString() }
         : { terms_accepted_recipient: true, recipient_signed_at: new Date().toISOString() };
 
-      // Step 3: Determine the correct next status based on current state.
-      // Trigger C2 will also validate this, but computing it client-side
-      // avoids a round-trip error on an obvious pre-condition failure.
+      // Step 3: Determine the correct next status.
+      //
+      // The DB trigger (Migration 003) enforces a strict graph:
+      //   draft → pending_proposer_sig (ONLY valid first transition)
+      //   pending_proposer_sig → pending_recipient_sig  (implicit, no guard)
+      //   pending_recipient_sig → active  (requires dual acceptance)
+      //
+      // Root cause of the H1 blocker: the old code sent 'pending_recipient_sig'
+      // when the proposer signed first from 'draft', but the trigger rejects any
+      // status other than 'pending_proposer_sig' or 'cancelled' from 'draft'.
+      //
+      // Fix: always use 'pending_proposer_sig' as the intermediate status when
+      // moving away from 'draft', regardless of which party signs first.
+      // Only move to 'active' once BOTH parties have accepted.
       const otherPartyHasSigned = isProposer
         ? current.terms_accepted_recipient === true
         : current.terms_accepted_proposer === true;
 
       let nextStatus: string;
       if (otherPartyHasSigned) {
-        // Both parties will have signed after this update → activate.
+        // Both parties will have accepted after this update → activate.
         nextStatus = 'active';
-      } else if (isProposer) {
-        // Proposer signs first: draft → pending_proposer_sig is handled by
-        // the DB trigger. The frontend status transitions:
-        //   If current is 'draft' or 'pending_proposer_sig', move to pending_recipient_sig.
-        nextStatus = 'pending_recipient_sig';
-      } else {
-        // Recipient signs first (rare but allowed): move to pending_proposer_sig.
+      } else if (current.status === 'draft') {
+        // First signature from draft — trigger ONLY allows pending_proposer_sig here.
         nextStatus = 'pending_proposer_sig';
+      } else {
+        // Second-party signs after first is already recorded → move to waiting state.
+        nextStatus = 'pending_recipient_sig';
       }
 
       // Step 4: Submit the update. The BEFORE UPDATE trigger enforces all

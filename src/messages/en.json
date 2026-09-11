@@ -242,7 +242,9 @@
     "pendingSignature": "Pending Acceptance",
     "draftingBtn": "Drafting...",
     "signingBtn": "Processing Acceptance...",
-    "stampReady": "Ready for electronic acceptance confirmation"
+    "stampReady": "Ready for electronic acceptance confirmation",
+    "toastSignFailed": "Acceptance failed — please review the error below",
+    "signErrorFallback": "An unexpected error occurred during acceptance. Please try again."
   },
   "mobilization": {
     "title": "Field Mobilization & Readiness Tracker (7 Compliant Stages)",

@@ -8,6 +8,7 @@ import { RequestType, CreateRequestInput, Profile } from '@/types/database';
 import { REQUEST_TYPE_META } from '@/lib/constants';
 import RequestForm from './RequestForm';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { toast } from 'sonner';
 
 interface RequestModalProps {
@@ -30,6 +31,7 @@ export default function RequestModal({
   const t = useTranslations('requestModal');
   const locale = useLocale();
   const [loading, setLoading] = useState(false);
+  const modalRef = useModalA11y(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -70,11 +72,12 @@ export default function RequestModal({
       <div className="fixed inset-0" onClick={onClose} />
 
       <motion.div
+        ref={modalRef}
         initial={{ y: '100%', opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="relative z-10 w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl bg-[#0E1524] border-t sm:border border-amber-500/30 p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="relative z-10 w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl bg-[#0E1524] border-t sm:border border-amber-500/30 p-6 sm:p-8 shadow-2xl max-h-[88dvh] overflow-y-auto"
       >
         <div className="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-4 sm:hidden" />
 

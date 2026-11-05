@@ -105,7 +105,7 @@ export default function MarketplaceFilters({
           >
             <option value="all">{t('allSpecialties')}</option>
             {SPECIALTIES.map((s) => (
-              <option key={s.id} value={locale === 'ar' ? s.ar : s.en} className="bg-slate-900 text-white">
+              <option key={s.id} value={s.id} className="bg-slate-900 text-white">
                 {locale === 'ar' ? s.ar : s.en}
               </option>
             ))}

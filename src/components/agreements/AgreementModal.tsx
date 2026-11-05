@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { X, FileText } from 'lucide-react';
 import { MatchProposal } from '@/types/database';
 import { getSpecialtyLabel, getCityLabel } from '@/lib/constants';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { toast } from 'sonner';
 
 interface AgreementModalProps {
@@ -31,6 +32,7 @@ export default function AgreementModal({
   const [daysCount, setDaysCount] = useState(10);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const modalRef = useModalA11y(isOpen, onClose);
 
   if (!isOpen || !match || !match.request) return null;
 
@@ -72,10 +74,11 @@ export default function AgreementModal({
       <div className="fixed inset-0" onClick={onClose} />
 
       <motion.div
+        ref={modalRef}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="relative z-10 w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl bg-[#0E1524] border border-amber-500/30 p-6 sm:p-7 shadow-2xl space-y-5"
+        className="relative z-10 w-full max-w-xl max-h-[88dvh] overflow-y-auto rounded-2xl bg-[#0E1524] border border-amber-500/30 p-6 sm:p-7 shadow-2xl space-y-5"
       >
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2.5">

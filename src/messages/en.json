@@ -140,7 +140,8 @@
     "refreshedToast": "Marketplace data refreshed successfully",
     "proposalsRefreshedToast": "Proposals refreshed successfully",
     "openChatBtn": "Chat & Negotiate",
-    "createAgreementBtn": "Create Sublease Agreement"
+    "createAgreementBtn": "Create Sublease Agreement",
+    "loadMore": "Load More"
   },
   "matching": {
     "compatibility": "Match Compatibility",

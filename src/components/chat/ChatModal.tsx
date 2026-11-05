@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { X, MessageSquare, Handshake } from 'lucide-react';
 import { MatchProposal } from '@/types/database';
 import { useMatchChat } from '@/hooks/useMatchChat';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import ChatMessageItem from './ChatMessageItem';
 import ChatInput from './ChatInput';
 
@@ -28,6 +29,7 @@ export default function ChatModal({
   const tMkt = useTranslations('marketplace');
   const { messages, loading, sendMessage } = useMatchChat(match?.id, currentUserId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const modalRef = useModalA11y(isOpen, onClose);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -45,10 +47,11 @@ export default function ChatModal({
       <div className="fixed inset-0" onClick={onClose} />
 
       <motion.div
+        ref={modalRef}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="relative z-10 w-full max-w-2xl h-[550px] rounded-2xl bg-[#0E1524] border border-amber-500/30 p-5 sm:p-6 shadow-2xl flex flex-col justify-between"
+        className="relative z-10 w-full max-w-2xl h-[550px] max-h-[88dvh] rounded-2xl bg-[#0E1524] border border-amber-500/30 p-5 sm:p-6 shadow-2xl flex flex-col justify-between"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">

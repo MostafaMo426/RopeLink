@@ -1,4 +1,5 @@
 import { ManpowerRequest, SaudiCity } from '@/types/database';
+import { toCanonicalSpecialtyId } from '@/lib/constants';
 
 const REGION_MAP: Record<SaudiCity, string> = {
   Jubail: 'Eastern',
@@ -79,27 +80,25 @@ export function calculateMatchScore(
     };
   }
 
-  // 1. Specialty / Trade Matching (Weight: 40%)
+  // 1. Specialty / Trade Matching (Weight: 40%) - Canonical ID Normalization
+  const cDemand = toCanonicalSpecialtyId(demand.specialty);
+  const cSupply = toCanonicalSpecialtyId(supply.specialty);
   let specialtyScore = 50;
-  if (demand.specialty === supply.specialty) {
+
+  if (cDemand === cSupply && cDemand !== '') {
+    specialtyScore = 100;
+  } else if (cDemand.startsWith('irata_') && cSupply.startsWith('irata_')) {
+    if (cSupply === 'irata_l3') specialtyScore = 95;
+    else if (cSupply === 'irata_l2' && cDemand === 'irata_l1') specialtyScore = 85;
+    else if (cSupply === 'irata_l1' && cDemand === 'irata_l2') specialtyScore = 70;
+    else specialtyScore = 60;
+  } else if (cDemand === 'ndt_inspection' && cSupply === 'ndt_inspection') {
     specialtyScore = 100;
   } else if (
-    demand.specialty.toLowerCase().includes('irata') &&
-    supply.specialty.toLowerCase().includes('irata')
+    demand.specialty?.toLowerCase().includes('irata') &&
+    supply.specialty?.toLowerCase().includes('irata')
   ) {
-    if (
-      supply.specialty.toLowerCase().includes('l3') ||
-      supply.specialty.toLowerCase().includes('supervisor')
-    ) {
-      specialtyScore = 95;
-    } else {
-      specialtyScore = 80;
-    }
-  } else if (
-    demand.specialty.toLowerCase().includes('ndt') &&
-    supply.specialty.toLowerCase().includes('ndt')
-  ) {
-    specialtyScore = 90;
+    specialtyScore = supply.specialty.toLowerCase().includes('l3') ? 95 : 80;
   }
 
   // 2. Geographic Proximity Scoring (Weight: 30%)

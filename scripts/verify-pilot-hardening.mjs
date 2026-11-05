@@ -110,6 +110,22 @@ assertStatic(
   'UI Component: AgreementSignatureModal reflects electronic acceptance record'
 );
 
+// Check 6 (Phase 5 - U3): Modal Accessibility Hook (Escape key & Tab focus trap)
+const a11yHookCode = fs.existsSync('src/hooks/useModalA11y.ts') ? fs.readFileSync('src/hooks/useModalA11y.ts', 'utf8') : '';
+assertStatic(
+  a11yHookCode.includes("e.key === 'Escape'") && a11yHookCode.includes("e.key === 'Tab'") && a11yHookCode.includes('focusables'),
+  'STAT-06',
+  'Modal Accessibility: useModalA11y hook implemented with Escape key and Tab focus trap'
+);
+
+// Check 7 (Phase 5 - P4): Client Cache Layer (Stale-while-revalidate & session purging)
+const cacheCode = fs.existsSync('src/lib/cache/clientCache.ts') ? fs.readFileSync('src/lib/cache/clientCache.ts', 'utf8') : '';
+assertStatic(
+  cacheCode.includes('getCached') && cacheCode.includes('setCached') && cacheCode.includes('clearCache'),
+  'STAT-07',
+  'Query Caching: clientCache module implemented with TTL, invalidation, and clearCache'
+);
+
 // =============================================================================
 // [B] DATABASE SCHEMA & RLS POLICY CHECKS
 // =============================================================================
@@ -260,6 +276,28 @@ assertRuntime(
   validRes.breakdown.headcountScore === 100,
   'RUN-05',
   'Matching Runtime: Valid complementary pair evaluates 100% across 40/30/20/10 factor weights'
+);
+
+// Test RUN-05b (Phase 5 - U5): Cross-locale canonical specialty matching
+const arEnRes = calculateMatchScore(
+  { ...demandReq, specialty: 'فني حبال IRATA مستوى 1' },
+  { ...validSupplyReq, specialty: 'IRATA Rope Access L1' }
+);
+assertRuntime(
+  arEnRes.breakdown.specialtyScore === 100,
+  'RUN-05b',
+  'Matching Runtime (U5): Cross-locale canonical specialty match (Arabic label vs English label evaluates 100%)'
+);
+
+// Test RUN-05c (Phase 5 - U5): Hierarchical IRATA match (Demand L1 vs Supply L3 supervisor)
+const l3Res = calculateMatchScore(
+  { ...demandReq, specialty: 'irata_l1' },
+  { ...validSupplyReq, specialty: 'irata_l3' }
+);
+assertRuntime(
+  l3Res.breakdown.specialtyScore === 95,
+  'RUN-05c',
+  'Matching Runtime (U5): Hierarchical IRATA matching (L3 supervisor covers L1 demand at 95% specialty score)'
 );
 
 // --- [C.2] Mobilization Sequential State Machine Runtime Simulation ---

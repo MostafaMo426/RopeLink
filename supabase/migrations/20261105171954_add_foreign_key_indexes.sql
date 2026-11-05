@@ -40,3 +40,4 @@ ON public.matches(recipient_id);
 -- The composite index idx_requests_city_type already covers (city, type)
 -- where city is the leading column, satisfying queries on city alone.
 DROP INDEX IF EXISTS public.idx_requests_city;
+

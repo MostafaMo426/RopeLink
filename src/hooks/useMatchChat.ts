@@ -58,15 +58,30 @@ export function useMatchChat(matchId?: string, currentUserId?: string) {
             .eq('id', newMsg.sender_id)
             .single();
 
-          setMessages((prev) => [
-            ...prev,
-            { ...newMsg, sender: senderProfile || null },
-          ]);
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === newMsg.id)) return prev;
+            return [...prev, { ...newMsg, sender: senderProfile || null }];
+          });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          // H4: Recover any messages missed while disconnected/reconnecting
+          fetchMessages();
+        }
+      });
+
+    // H4: Re-fetch on network online or tab focus return
+    const handleReconnect = () => fetchMessages();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchMessages();
+    };
+    window.addEventListener('online', handleReconnect);
+    document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
+      window.removeEventListener('online', handleReconnect);
+      document.removeEventListener('visibilitychange', handleVisibility);
       supabase.removeChannel(channel);
     };
   }, [matchId, fetchMessages]);

@@ -1,29 +1,32 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from '@/i18n/routing';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import GuidedTour from '@/components/dashboard/GuidedTour';
-import RequestModal from '@/components/requests/RequestModal';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import RequestsList from '@/components/dashboard/RequestsList';
 import AdminOperationsView from '@/components/dashboard/AdminOperationsView';
 import MarketplaceFeed from '@/components/marketplace/MarketplaceFeed';
 import MatchProposalsList from '@/components/dashboard/MatchProposalsList';
 import AgreementsFeed from '@/components/agreements/AgreementsFeed';
-import AgreementModal from '@/components/agreements/AgreementModal';
-import ChatModal from '@/components/chat/ChatModal';
 import QuickActionButtons from '@/components/dashboard/QuickActionButtons';
 import DashboardTabs from '@/components/dashboard/DashboardTabs';
 import VerificationBanner from '@/components/verification/VerificationBanner';
-import VerificationModal from '@/components/verification/VerificationModal';
 import ConfigurationGuard from '@/components/common/ConfigurationGuard';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useRequests } from '@/hooks/useRequests';
 import { useRealtimeMarketplace } from '@/hooks/useRealtimeMarketplace';
 import { useAgreements } from '@/hooks/useAgreements';
 import { RequestType, MatchProposal } from '@/types/database';
+
+// P3: Deferred dynamic imports for heavy dialog modals
+const RequestModal = dynamic(() => import('@/components/requests/RequestModal'), { ssr: false });
+const VerificationModal = dynamic(() => import('@/components/verification/VerificationModal'), { ssr: false });
+const ChatModal = dynamic(() => import('@/components/chat/ChatModal'), { ssr: false });
+const AgreementModal = dynamic(() => import('@/components/agreements/AgreementModal'), { ssr: false });
 
 export default function DashboardPage() {
   const router = useRouter();

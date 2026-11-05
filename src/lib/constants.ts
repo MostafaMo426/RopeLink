@@ -53,6 +53,26 @@ export function getSpecialtyLabel(specialty: string, locale: string): string {
   return found ? (locale === 'ar' ? found.ar : found.en) : specialty;
 }
 
+export function toCanonicalSpecialtyId(specialty: string): string {
+  if (!specialty) return '';
+  const trimmed = specialty.trim().toLowerCase();
+  const found = SPECIALTIES.find(
+    (s) =>
+      s.id.toLowerCase() === trimmed ||
+      s.en.toLowerCase() === trimmed ||
+      s.ar.toLowerCase() === trimmed
+  );
+  if (found) return found.id;
+  if (trimmed.includes('l3') || trimmed.includes('supervisor') || trimmed.includes('مستوى 3') || trimmed.includes('مشرف')) return 'irata_l3';
+  if (trimmed.includes('l2') || trimmed.includes('مستوى 2')) return 'irata_l2';
+  if (trimmed.includes('l1') || trimmed.includes('مستوى 1')) return 'irata_l1';
+  if (trimmed.includes('ndt') || trimmed.includes('إتلافي')) return 'ndt_inspection';
+  if (trimmed.includes('weld') || trimmed.includes('لحام')) return 'industrial_welding';
+  if (trimmed.includes('facade') || trimmed.includes('واجهات')) return 'facade_maintenance';
+  if (trimmed.includes('blade') || trimmed.includes('turbine') || trimmed.includes('توربينات')) return 'blade_repair';
+  return specialty;
+}
+
 export const REQUEST_TYPE_META: Record<
   RequestType,
   { labelAr: string; labelEn: string; color: string; badge: string }

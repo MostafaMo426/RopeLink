@@ -211,3 +211,4 @@ REVOKE EXECUTE ON FUNCTION public.prevent_profile_privilege_escalation() FROM PU
 DO $$ BEGIN
     REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
 EXCEPTION WHEN OTHERS THEN NULL; END $$;
+

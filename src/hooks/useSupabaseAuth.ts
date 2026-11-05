@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { clearCache, getCached, setCached } from '@/lib/cache/clientCache';
 import { Profile } from '@/types/database';
 import { User } from '@supabase/supabase-js';
 
@@ -12,13 +13,20 @@ export function useSupabaseAuth() {
 
   const fetchProfile = useCallback(async (uid: string) => {
     if (!isSupabaseConfigured()) return;
+    const cacheKey = `profile_${uid}`;
+    const cached = getCached<Profile>(cacheKey);
+    if (cached) setProfile(cached);
+
     try {
       const { data } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', uid)
         .maybeSingle();
-      if (data) setProfile(data);
+      if (data) {
+        setProfile(data);
+        setCached(cacheKey, data, 60_000);
+      }
     } catch (e) {
       console.warn('Error fetching profile:', e);
     }
@@ -56,8 +64,10 @@ export function useSupabaseAuth() {
           setUser(session.user);
           await fetchProfile(session.user.id);
         } else if (isMounted) {
+          // H5: Reset stale profile and user state on session invalidation
           setUser(null);
           setProfile(null);
+          clearCache();
         }
       });
       authSubscription = data.subscription;
@@ -73,6 +83,8 @@ export function useSupabaseAuth() {
     if (isSupabaseConfigured()) {
       await supabase.auth.signOut();
     }
+    // H5: Clear user state and query caches on explicit sign-out
+    clearCache();
     setUser(null);
     setProfile(null);
   };

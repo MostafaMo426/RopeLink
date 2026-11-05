@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { ManpowerRequest, Profile } from '@/types/database';
+import { toCanonicalSpecialtyId } from '@/lib/constants';
 import MarketplaceFilters from './MarketplaceFilters';
 import MarketplaceCard from './MarketplaceCard';
 import MatchProposalModal from './MatchProposalModal';
@@ -34,6 +35,7 @@ export default function MarketplaceFeed({
   const [refreshing, setRefreshing] = useState(false);
 
   const [selectedProposalReq, setSelectedProposalReq] = useState<ManpowerRequest | null>(null);
+  const [pageSize, setPageSize] = useState(12);
 
   const handleRefresh = async () => {
     if (!onRefresh) return;
@@ -45,15 +47,27 @@ export default function MarketplaceFeed({
     }, 400);
   };
 
-  // Filter requests
-  const filtered = requests.filter((req) => {
-    if (typeFilter === 'projects' && req.type === 'available_crew') return false;
-    if (typeFilter === 'crews' && req.type !== 'available_crew') return false;
-    if (cityFilter !== 'all' && req.city !== cityFilter) return false;
-    if (specialtyFilter !== 'all' && req.specialty !== specialtyFilter) return false;
-    if (verifiedOnly && req.profiles?.verification_status !== 'verified') return false;
-    return true;
-  });
+  // P1: Memoized filtering with U5 Canonical Specialty Matching
+  const filtered = useMemo(() => {
+    return requests.filter((req) => {
+      if (typeFilter === 'projects' && req.type === 'available_crew') return false;
+      if (typeFilter === 'crews' && req.type !== 'available_crew') return false;
+      if (cityFilter !== 'all' && req.city !== cityFilter) return false;
+      if (
+        specialtyFilter !== 'all' &&
+        toCanonicalSpecialtyId(req.specialty) !== toCanonicalSpecialtyId(specialtyFilter)
+      ) {
+        return false;
+      }
+      if (verifiedOnly && req.profiles?.verification_status !== 'verified') return false;
+      return true;
+    });
+  }, [requests, typeFilter, cityFilter, specialtyFilter, verifiedOnly]);
+
+  // P2: Paginated viewport slice
+  const visibleRequests = useMemo(() => {
+    return filtered.slice(0, pageSize);
+  }, [filtered, pageSize]);
 
   return (
     <div id="tour-marketplace" className="space-y-5">
@@ -100,16 +114,29 @@ export default function MarketplaceFeed({
           <p className="text-xs text-slate-500">{t('emptyMarketplaceSubtitle')}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((req) => (
-            <MarketplaceCard
-              key={req.id}
-              request={req}
-              currentUserProfile={currentUserProfile}
-              userRequests={userRequests}
-              onOpenProposal={(target) => setSelectedProposalReq(target)}
-            />
-          ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {visibleRequests.map((req) => (
+              <MarketplaceCard
+                key={req.id}
+                request={req}
+                currentUserProfile={currentUserProfile}
+                userRequests={userRequests}
+                onOpenProposal={(target) => setSelectedProposalReq(target)}
+              />
+            ))}
+          </div>
+
+          {filtered.length > pageSize && (
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={() => setPageSize((prev) => prev + 12)}
+                className="px-5 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-amber-400 border border-slate-700 hover:border-amber-500/50 text-xs font-bold transition-all cursor-pointer shadow-lg"
+              >
+                {t('loadMore')} ({filtered.length - pageSize})
+              </button>
+            </div>
+          )}
         </div>
       )}
 

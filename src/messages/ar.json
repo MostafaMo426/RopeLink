@@ -140,7 +140,8 @@
     "refreshedToast": "تم تحديث بيانات السوق بنجاح",
     "proposalsRefreshedToast": "تم تحديث عروض الإسناد بنجاح",
     "openChatBtn": "المحادثة والتفاوض",
-    "createAgreementBtn": "إنشاء عقد إسناد"
+    "createAgreementBtn": "إنشاء عقد إسناد",
+    "loadMore": "عرض المزيد"
   },
   "matching": {
     "compatibility": "نسبة التطابق الميداني",

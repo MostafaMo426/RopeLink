@@ -26,7 +26,7 @@ export default function RequestForm({
   const [city, setCity] = useState<SaudiCity>('Jubail');
   const [startDate, setStartDate] = useState('');
   const [count, setCount] = useState(4);
-  const [specialty, setSpecialty] = useState(locale === 'ar' ? SPECIALTIES[0].ar : SPECIALTIES[0].en);
+  const [specialty, setSpecialty] = useState(SPECIALTIES[0].id);
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
@@ -160,7 +160,7 @@ export default function RequestForm({
             className="w-full ps-9 pe-3 py-2.5 bg-slate-900/90 border border-slate-700 rounded-lg text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none appearance-none"
           >
             {SPECIALTIES.map((s) => (
-              <option key={s.id} value={locale === 'ar' ? s.ar : s.en} className="bg-slate-900 text-white">
+              <option key={s.id} value={s.id} className="bg-slate-900 text-white">
                 {locale === 'ar' ? s.ar : s.en}
               </option>
             ))}

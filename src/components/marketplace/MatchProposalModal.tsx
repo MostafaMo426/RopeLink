@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { X, Send, Handshake } from 'lucide-react';
 import { ManpowerRequest } from '@/types/database';
 import { getCityLabel, getSpecialtyLabel } from '@/lib/constants';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { toast } from 'sonner';
 
 interface MatchProposalModalProps {
@@ -26,6 +27,7 @@ export default function MatchProposalModal({
   const locale = useLocale();
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const modalRef = useModalA11y(isOpen, onClose);
 
   if (!isOpen || !targetRequest) return null;
 
@@ -58,10 +60,11 @@ export default function MatchProposalModal({
       <div className="fixed inset-0" onClick={onClose} />
 
       <motion.div
+        ref={modalRef}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="relative z-10 w-full max-w-md rounded-2xl bg-[#0E1524] border border-amber-500/30 p-6 sm:p-7 shadow-2xl space-y-5"
+        className="relative z-10 w-full max-w-md max-h-[88dvh] overflow-y-auto rounded-2xl bg-[#0E1524] border border-amber-500/30 p-6 sm:p-7 shadow-2xl space-y-5"
       >
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">

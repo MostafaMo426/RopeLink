@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { X, ShieldCheck, FileText, UploadCloud, CheckCircle } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { Profile } from '@/types/database';
 import { toast } from 'sonner';
 
@@ -25,6 +26,7 @@ export default function VerificationModal({
   const [crNumber, setCrNumber] = useState(profile?.cr_number || '');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const modalRef = useModalA11y(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -104,10 +106,11 @@ export default function VerificationModal({
       <div className="fixed inset-0" onClick={onClose} />
 
       <motion.div
+        ref={modalRef}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="relative z-10 w-full max-w-lg rounded-2xl bg-[#0E1524] border border-amber-500/30 p-6 sm:p-8 shadow-2xl space-y-6"
+        className="relative z-10 w-full max-w-lg max-h-[88dvh] overflow-y-auto rounded-2xl bg-[#0E1524] border border-amber-500/30 p-6 sm:p-8 shadow-2xl space-y-6"
       >
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div className="flex items-center gap-2.5">

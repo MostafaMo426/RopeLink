@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { X, PenTool, CheckCircle2, Shield, AlertCircle } from 'lucide-react';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { toast } from 'sonner';
 
 interface AgreementSignatureModalProps {
@@ -29,6 +30,7 @@ export default function AgreementSignatureModal({
   const [signing, setSigning] = useState(false);
   // H1 FIX: localError holds a DB-level or network error message shown inline.
   const [localError, setLocalError] = useState<string | null>(null);
+  const modalRef = useModalA11y(isOpen, onClose);
 
   // U7: Reset local error state whenever the modal opens (isOpen → true) or
   // the target agreement changes, so stale errors from a previous interaction
@@ -65,10 +67,11 @@ export default function AgreementSignatureModal({
       <div className="fixed inset-0" onClick={onClose} />
 
       <motion.div
+        ref={modalRef}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="relative z-10 w-full max-w-md rounded-2xl bg-[#0E1524] border border-amber-500/30 p-6 shadow-2xl space-y-5"
+        className="relative z-10 w-full max-w-md max-h-[88dvh] overflow-y-auto rounded-2xl bg-[#0E1524] border border-amber-500/30 p-6 shadow-2xl space-y-5"
       >
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">

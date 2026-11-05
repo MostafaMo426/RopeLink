@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { getCached, setCached, invalidateCache } from '@/lib/cache/clientCache';
 import { Agreement, MilestoneStage, CrewRosterMember } from '@/types/database';
 
-// Columns fetched from the profile_directory view (Migration 002: C1 fix).
-// Excludes sensitive columns: cr_number, cr_document_url, hse_document_url, phone.
+// Columns fetched from profile_directory view (Migration 002: C1 fix)
 const DIRECTORY_COLS = 'id, company_name, role, city, verification_status, has_seen_tutorial, created_at, updated_at';
 
 export function useAgreements(currentUserId?: string) {
@@ -13,13 +13,19 @@ export function useAgreements(currentUserId?: string) {
   const [loading, setLoading] = useState(false);
 
   const fetchAgreements = useCallback(async () => {
-    if (!currentUserId) return;
-    setLoading(true);
+    // H5: Clear agreements if user is unauthenticated
+    if (!currentUserId) {
+      setAgreements([]);
+      setLoading(false);
+      return;
+    }
+
+    const cached = getCached<Agreement[]>(`agreements_${currentUserId}`);
+    if (cached) setAgreements(cached);
+    else setLoading(true);
+
     try {
       if (isSupabaseConfigured()) {
-        // U6 FIX: Join counterparty data through the secure profile_directory
-        // view instead of the base profiles table, which now returns 0 rows
-        // for cross-user queries after Migration 002 (C1 RLS lockdown).
         const { data, error } = await supabase
           .from('agreements')
           .select(
@@ -32,6 +38,7 @@ export function useAgreements(currentUserId?: string) {
           console.warn('Agreements fetch error:', error.message);
         } else if (data) {
           setAgreements(data as Agreement[]);
+          setCached(`agreements_${currentUserId}`, data, 20_000);
         }
       }
     } catch (err) {
@@ -61,16 +68,10 @@ export function useAgreements(currentUserId?: string) {
   }, [currentUserId, fetchAgreements]);
 
   const createAgreement = async (params: {
-    match_id: string;
-    proposer_id: string;
-    recipient_id: string;
-    specialty: string;
-    city: any;
-    technician_count: number;
-    daily_rate_sar: number;
-    total_estimated_sar: number;
-    start_date: string;
-    end_date: string;
+    match_id: string; proposer_id: string; recipient_id: string;
+    specialty: string; city: any; technician_count: number;
+    daily_rate_sar: number; total_estimated_sar: number;
+    start_date: string; end_date: string;
   }): Promise<Agreement | null> => {
     try {
       if (isSupabaseConfigured()) {
@@ -89,6 +90,7 @@ export function useAgreements(currentUserId?: string) {
           .single();
 
         if (error) throw error;
+        invalidateCache('agreements_');
         await fetchAgreements();
         return data as Agreement;
       }
@@ -144,6 +146,7 @@ export function useAgreements(currentUserId?: string) {
         return { success: false, error: updateErr.message };
       }
 
+      invalidateCache('agreements_');
       await fetchAgreements();
       return { success: true };
     } catch (err: any) {
@@ -171,6 +174,7 @@ export function useAgreements(currentUserId?: string) {
         return { success: false, error: error.message };
       }
 
+      invalidateCache('agreements_');
       await fetchAgreements();
       return { success: true };
     } catch (err: any) {

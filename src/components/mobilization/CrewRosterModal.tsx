@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { X, Users, Plus } from 'lucide-react';
 import { CrewRosterMember } from '@/types/database';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { toast } from 'sonner';
 import CrewRosterList from './CrewRosterList';
 
@@ -24,14 +25,12 @@ export default function CrewRosterModal({ isOpen, onClose, agreementId }: CrewRo
   const [ajeerRef, setAjeerRef] = useState('');
   const [gatePassRef, setGatePassRef] = useState('');
   const [loading, setLoading] = useState(false);
+  const modalRef = useModalA11y(isOpen, onClose);
 
   useEffect(() => {
     if (!isOpen || !agreementId) return;
-    // U7: Reset form fields when modal opens so stale data is not shown.
-    setName('');
-    setIrataNumber('');
-    setAjeerRef('');
-    setGatePassRef('');
+    // U7: Reset form fields when modal opens
+    setName(''); setIrataNumber(''); setAjeerRef(''); setGatePassRef('');
     const fetchRoster = async () => {
       if (isSupabaseConfigured()) {
         const { data } = await supabase
@@ -95,10 +94,11 @@ export default function CrewRosterModal({ isOpen, onClose, agreementId }: CrewRo
       <div className="fixed inset-0" onClick={onClose} />
 
       <motion.div
+        ref={modalRef}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="relative z-10 w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl bg-[#0E1524] border border-amber-500/30 p-6 shadow-2xl space-y-5"
+        className="relative z-10 w-full max-w-xl max-h-[88dvh] overflow-y-auto rounded-2xl bg-[#0E1524] border border-amber-500/30 p-6 shadow-2xl space-y-5"
       >
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">

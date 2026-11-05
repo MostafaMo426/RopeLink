@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { getCached, setCached, invalidateCache } from '@/lib/cache/clientCache';
 import { ManpowerRequest, MatchProposal, MatchStatus } from '@/types/database';
 
 export function useRealtimeMarketplace(userId?: string) {
@@ -10,33 +11,46 @@ export function useRealtimeMarketplace(userId?: string) {
   const [loading, setLoading] = useState(true);
 
   const fetchMarketplace = useCallback(async () => {
-    setLoading(true);
+    // Serve from cache if available for instantaneous rendering
+    const cachedReqs = getCached<ManpowerRequest[]>('mkt_requests');
+    if (cachedReqs) setRequests(cachedReqs);
+
+    let cachedMatches: MatchProposal[] | null = null;
+    if (userId) {
+      cachedMatches = getCached<MatchProposal[]>(`matches_${userId}`);
+      if (cachedMatches) setMatches(cachedMatches);
+    } else {
+      // H5: Strictly reset matches when no user session is present
+      setMatches([]);
+    }
+
+    if (!cachedReqs && !(userId && cachedMatches)) {
+      setLoading(true);
+    }
+
     try {
       if (isSupabaseConfigured()) {
         const { data, error } = await supabase
           .from('requests')
-          // Use the secure profile_directory view (Migration 002: C1 fix).
-          // This view excludes sensitive columns: cr_number, cr_document_url,
-          // hse_document_url, phone — only safe directory fields are returned.
           .select('*, profiles:profile_directory!requests_user_id_fkey(id, company_name, city, verification_status)')
           .order('created_at', { ascending: false });
 
         if (error) {
           console.warn('Marketplace fetch error:', error.message);
-        } else {
-          setRequests(data || []);
+        } else if (data) {
+          setRequests(data);
+          setCached('mkt_requests', data, 20_000);
         }
 
         if (userId) {
           const { data: matchData, error: matchErr } = await supabase
             .from('matches')
-            // Use profile_directory view for match participants (C1 fix).
-            // Exposes only safe columns, not sensitive business documents.
             .select('*, request:requests(*), proposer:profile_directory!matches_proposer_id_fkey(id, company_name, city, verification_status), recipient:profile_directory!matches_recipient_id_fkey(id, company_name, city, verification_status)')
             .or(`proposer_id.eq.${userId},recipient_id.eq.${userId}`)
             .order('created_at', { ascending: false });
           if (!matchErr && matchData) {
             setMatches(matchData);
+            setCached(`matches_${userId}`, matchData, 20_000);
           }
         }
       }
@@ -64,6 +78,8 @@ export function useRealtimeMarketplace(userId?: string) {
         },
       ]);
       if (error) throw error;
+      invalidateCache('matches_');
+      invalidateCache('mkt_requests');
       await fetchMarketplace();
       return true;
     } catch (e) {
@@ -83,6 +99,8 @@ export function useRealtimeMarketplace(userId?: string) {
         .update({ status })
         .eq('id', matchId);
       if (error) throw error;
+      invalidateCache('matches_');
+      invalidateCache('mkt_requests');
       await fetchMarketplace();
       return true;
     } catch (e) {

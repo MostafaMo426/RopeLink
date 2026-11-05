@@ -474,3 +474,4 @@ RopeLink/
 ## 📄 License & Intellectual Property
 
 Proprietary software. Designed and developed for Saudi industrial turnaround operations and Vision 2030 industrial mobilization compliance. All rights reserved.
+

@@ -116,13 +116,13 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
     created_at TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
--- 9. Helper Function: Check Admin Privileges
+-- 9. Helper Function: Check Admin Privileges (Security Invoker with InitPlan Caching)
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $$
 BEGIN
-    RETURN EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin');
+    RETURN EXISTS (SELECT 1 FROM public.profiles WHERE id = (SELECT auth.uid()) AND role = 'admin');
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public, pg_temp;
+$$ LANGUAGE plpgsql SECURITY INVOKER STABLE SET search_path = public, pg_temp;
 
 -- 10. Automated Profile Creation Trigger (Prevents Role Escalation on Signup)
 CREATE OR REPLACE FUNCTION public.handle_new_user()

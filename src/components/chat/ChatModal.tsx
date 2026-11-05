@@ -111,7 +111,7 @@ export default function ChatModal({
         </div>
 
         {/* Input */}
-        <ChatInput onSend={sendMessage} />
+        <ChatInput onSend={sendMessage} maxLength={500} />
       </motion.div>
     </div>
   );

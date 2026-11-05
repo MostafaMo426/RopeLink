@@ -27,6 +27,11 @@ export default function CrewRosterModal({ isOpen, onClose, agreementId }: CrewRo
 
   useEffect(() => {
     if (!isOpen || !agreementId) return;
+    // U7: Reset form fields when modal opens so stale data is not shown.
+    setName('');
+    setIrataNumber('');
+    setAjeerRef('');
+    setGatePassRef('');
     const fetchRoster = async () => {
       if (isSupabaseConfigured()) {
         const { data } = await supabase
@@ -63,15 +68,21 @@ export default function CrewRosterModal({ isOpen, onClose, agreementId }: CrewRo
         .select()
         .single();
 
-      if (!error && data) {
-        setRoster((prev) => [...prev, data as CrewRosterMember]);
-        toast.success(t('techAddedSuccess'));
+      if (error || !data) {
+        // H2: Preserve inputs on failure — do NOT clear fields
+        toast.error(t('techAddError'));
+        setLoading(false);
+        return;
       }
+
+      setRoster((prev) => [...prev, data as CrewRosterMember]);
+      toast.success(t('techAddedSuccess'));
     } else {
       setRoster((prev) => [...prev, { ...newMember, id: `r_${Date.now()}`, created_at: new Date().toISOString() }]);
       toast.success(t('techAddedSuccess'));
     }
 
+    // Only clear fields on success path
     setName('');
     setIrataNumber('');
     setAjeerRef('');

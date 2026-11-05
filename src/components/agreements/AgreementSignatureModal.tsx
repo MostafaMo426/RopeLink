@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { X, PenTool, CheckCircle2, Shield, AlertCircle } from 'lucide-react';
@@ -29,6 +29,15 @@ export default function AgreementSignatureModal({
   const [signing, setSigning] = useState(false);
   // H1 FIX: localError holds a DB-level or network error message shown inline.
   const [localError, setLocalError] = useState<string | null>(null);
+
+  // U7: Reset local error state whenever the modal opens (isOpen → true) or
+  // the target agreement changes, so stale errors from a previous interaction
+  // are never shown to the user on a fresh open.
+  useEffect(() => {
+    if (isOpen) {
+      setLocalError(null);
+    }
+  }, [isOpen, agreementId]);
 
   if (!isOpen) return null;
 

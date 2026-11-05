@@ -195,7 +195,9 @@
     "empty": "No messages yet. Start negotiating your turnaround terms!",
     "unreadBadge": "New",
     "you": "You",
-    "partner": "Commercial Partner"
+    "partner": "Commercial Partner",
+    "chatTruncWarning": "Message exceeds maximum length (500 characters)",
+    "chatCharCount": "{count}/{max}"
   },
   "agreements": {
     "title": "Digital Turnaround Subleasing Agreements",
@@ -274,6 +276,8 @@
     "techsRosterList": "Registered Field Technicians",
     "emptyRoster": "No technicians added to this agreement roster yet.",
     "techAddedSuccess": "Technician added to project roster",
+    "techAddError": "Failed to add technician to roster. Please try again.",
+    "milestoneAdvanceError": "Cannot advance milestone — please check prerequisites",
     "ajeerPrefix": "Ajeer",
     "passPrefix": "Pass"
   },

@@ -35,7 +35,11 @@ export default function MobilizationTracker({
   const handleAdvance = async () => {
     if (!nextStage || !onAdvanceMilestone || advancing) return;
     setAdvancing(true);
-    await onAdvanceMilestone(agreementId, nextStage);
+    const result = await onAdvanceMilestone(agreementId, nextStage);
+    if (!result.success) {
+      const { toast } = await import('sonner');
+      toast.error(result.error || t('milestoneAdvanceError'));
+    }
     setAdvancing(false);
   };
 

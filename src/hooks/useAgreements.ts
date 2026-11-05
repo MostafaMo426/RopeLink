@@ -99,21 +99,7 @@ export function useAgreements(currentUserId?: string) {
     }
   };
 
-  /**
-   * H1 FIX: signAgreement — aligned to the trigger-enforced lifecycle:
-   *
-   *   draft → pending_proposer_sig  (proposer clicks sign first)
-   *   pending_proposer_sig → pending_recipient_sig  (proposer signs)
-   *   pending_recipient_sig → active  (recipient signs, both accepted)
-   *
-   * The trigger (Migration 002/003) enforces:
-   *   - The caller must be the correct party (proposer/recipient).
-   *   - terms_accepted_* is permanent once TRUE.
-   *   - 'active' requires dual acceptance.
-   *
-   * This function returns { success: boolean; error?: string } so the
-   * modal can surface DB-level rejection messages to the user (H1).
-   */
+  // H1: Trigger-enforced signing with structured error reporting.
   const signAgreement = async (
     agreementId: string,
     isProposer: boolean
@@ -121,8 +107,6 @@ export function useAgreements(currentUserId?: string) {
     if (!isSupabaseConfigured()) return { success: false, error: 'Supabase not configured' };
 
     try {
-      // Step 1: Fetch the current agreement state to determine the correct
-      // next status transition without relying on stale client state.
       const { data: current, error: fetchErr } = await supabase
         .from('agreements')
         .select('id, status, terms_accepted_proposer, terms_accepted_recipient')
@@ -133,51 +117,30 @@ export function useAgreements(currentUserId?: string) {
         return { success: false, error: fetchErr?.message ?? 'Agreement not found' };
       }
 
-      // Step 2: Build the signing payload for the correct party.
       const signingPayload = isProposer
         ? { terms_accepted_proposer: true, proposer_signed_at: new Date().toISOString() }
         : { terms_accepted_recipient: true, recipient_signed_at: new Date().toISOString() };
 
-      // Step 3: Determine the correct next status.
-      //
-      // The DB trigger (Migration 003) enforces a strict graph:
-      //   draft → pending_proposer_sig (ONLY valid first transition)
-      //   pending_proposer_sig → pending_recipient_sig  (implicit, no guard)
-      //   pending_recipient_sig → active  (requires dual acceptance)
-      //
-      // Root cause of the H1 blocker: the old code sent 'pending_recipient_sig'
-      // when the proposer signed first from 'draft', but the trigger rejects any
-      // status other than 'pending_proposer_sig' or 'cancelled' from 'draft'.
-      //
-      // Fix: always use 'pending_proposer_sig' as the intermediate status when
-      // moving away from 'draft', regardless of which party signs first.
-      // Only move to 'active' once BOTH parties have accepted.
       const otherPartyHasSigned = isProposer
         ? current.terms_accepted_recipient === true
         : current.terms_accepted_proposer === true;
 
+      // H1 edge-case fix: draft check has absolute precedence.
       let nextStatus: string;
-      if (otherPartyHasSigned) {
-        // Both parties will have accepted after this update → activate.
-        nextStatus = 'active';
-      } else if (current.status === 'draft') {
-        // First signature from draft — trigger ONLY allows pending_proposer_sig here.
+      if (current.status === 'draft') {
         nextStatus = 'pending_proposer_sig';
+      } else if (otherPartyHasSigned) {
+        nextStatus = 'active';
       } else {
-        // Second-party signs after first is already recorded → move to waiting state.
         nextStatus = 'pending_recipient_sig';
       }
 
-      // Step 4: Submit the update. The BEFORE UPDATE trigger enforces all
-      // security rules — if it raises, the error surfaces here.
       const { error: updateErr } = await supabase
         .from('agreements')
         .update({ ...signingPayload, status: nextStatus })
         .eq('id', agreementId);
 
       if (updateErr) {
-        // Surface the DB trigger's message directly so the UI can show it.
-        // Trigger messages are intentionally human-readable (Migration 002/003).
         return { success: false, error: updateErr.message };
       }
 

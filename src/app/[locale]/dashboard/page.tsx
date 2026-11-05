@@ -18,6 +18,7 @@ import QuickActionButtons from '@/components/dashboard/QuickActionButtons';
 import DashboardTabs from '@/components/dashboard/DashboardTabs';
 import VerificationBanner from '@/components/verification/VerificationBanner';
 import VerificationModal from '@/components/verification/VerificationModal';
+import ConfigurationGuard from '@/components/common/ConfigurationGuard';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useRequests } from '@/hooks/useRequests';
 import { useRealtimeMarketplace } from '@/hooks/useRealtimeMarketplace';
@@ -64,6 +65,7 @@ export default function DashboardPage() {
   ).length;
 
   return (
+    <ConfigurationGuard>
     <div className="min-h-screen flex flex-col bg-[#07090E]">
       {user && profile && <GuidedTour user={user} profile={profile} restartCounter={restartCounter} />}
       <Navbar user={user} />
@@ -170,5 +172,6 @@ export default function DashboardPage() {
         onCreate={createAgreement}
       />
     </div>
+    </ConfigurationGuard>
   );
 }

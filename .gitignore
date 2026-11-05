@@ -26,6 +26,8 @@
 /.supabase/
 supabase/.branches/
 supabase/.temp/
+*.tar.gz
+*.zip
 
 # Private Keys & Certificates
 *.pem

@@ -54,3 +54,4 @@ export function useModalA11y(isOpen: boolean, onClose: () => void) {
 
   return containerRef;
 }
+
